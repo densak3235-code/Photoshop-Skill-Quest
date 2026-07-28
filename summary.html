@@ -220,8 +220,21 @@
             const s3Passed = localStorage.getItem("stage3_passed") === "true";
             const s4Passed = localStorage.getItem("stage4_passed") === "true";
 
-            const s1Time = parseInt(localStorage.getItem("stage1_time") || "0");
-            const s2Time = parseInt(localStorage.getItem("stage2_time") || "0");
+            // --- แก้ไขการดึงเวลาของ Stage 1 และ 2 ---
+            // หาเวลาของ Stage 2 จาก mission1 และ mission2 มารวมกัน
+            const m1Time = parseInt(localStorage.getItem("mission1_time") || "0");
+            const m2Time = parseInt(localStorage.getItem("mission2_time") || "0");
+            let s2Time = m1Time + m2Time;
+
+            // หาเวลาของ Stage 1 จาก elapsed_time (เวลารวม) ลบด้วยเวลาของ Stage 2
+            let s1Time = parseInt(localStorage.getItem("elapsed_time") || "0") - s2Time;
+            if (s1Time < 0) s1Time = 0; // ป้องกันกรณีค่าติดลบ
+            
+            // กรณีที่มีการแก้โค้ดบันทึก stage1_time หรือ stage2_time ไว้แล้วในอนาคต ให้ใช้ค่านั้นเป็นหลัก 
+            if (localStorage.getItem("stage1_time")) s1Time = parseInt(localStorage.getItem("stage1_time"));
+            if (localStorage.getItem("stage2_time")) s2Time = parseInt(localStorage.getItem("stage2_time"));
+            // ----------------------------------------
+
             const s3Time = parseInt(localStorage.getItem("stage3_time") || "0");
             const s4Time = parseInt(localStorage.getItem("stage4_time") || "0");
 
