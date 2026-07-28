@@ -1,0 +1,249 @@
+/* =========================================
+   ไฟล์: style_index.css (ฉบับสมบูรณ์)
+   - พื้นหลังเกม
+   - เส้นแสงดาวตก
+   - ปุ่มเด้ง + แสงวิ่ง
+   - โลโก้เกม + แสงวิ่งบนโลโก้
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box !important;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    background-color: #111; 
+    color: #f2f2f2;
+    font-family: 'Anuphan', sans-serif;
+    overflow: hidden; 
+}
+
+/* --- พื้นหลังภาพเกม --- */
+.container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    /* คำสั่งดึงรูปภาพพื้นหลัง (ตรวจสอบชื่อไฟล์ให้ตรงกับในเครื่องด้วยนะครับ) */
+    background-image: url('image/ps skill quest.svg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* --- อนิเมชันเส้นแสงตกลงมา --- */
+.lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    margin: auto;
+    width: 90vw;
+    display: flex;
+    justify-content: space-between; 
+    z-index: 0; 
+}
+
+.line {
+    position: relative;
+    width: 1px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.line::after {
+    content: '';
+    display: block;
+    position: absolute;
+    height: 15vh;
+    width: 100%;
+    top: -50%;
+    left: 0;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%);
+    animation: drop 7s 0s infinite;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
+}
+
+/* สีเฉพาะของแต่ละเส้นดาวตก */
+.line:nth-child(1)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #FF4500 75%, #FF4500 100%); animation-delay: 0.5s; }
+.line:nth-child(2)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #32CD32 75%, #32CD32 100%); animation-delay: 1s; }
+.line:nth-child(3)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #1E90FF 75%, #1E90FF 100%); animation-delay: 1.5s; }
+.line:nth-child(4)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #FFD700 75%, #FFD700 100%); animation-delay: 2s; }
+.line:nth-child(5)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #8A2BE2 75%, #8A2BE2 100%); animation-delay: 2.5s; }
+.line:nth-child(6)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #20B2AA 75%, #20B2AA 100%); animation-delay: 3s; }
+.line:nth-child(7)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #DC143C 75%, #DC143C 100%); animation-delay: 3.5s; }
+.line:nth-child(8)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00FA9A 75%, #00FA9A 100%); animation-delay: 4s; }
+.line:nth-child(9)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #FF1493 75%, #FF1493 100%); animation-delay: 4.5s; }
+.line:nth-child(10)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00BFFF 75%, #00BFFF 100%); animation-delay: 5s; }
+
+@keyframes drop {
+    0% { top: -50%; }
+    100% { top: 110%; }
+}
+
+/* --- ปุ่มเข้าสู่เกม --- */
+.button-container {
+    position: absolute;
+    bottom: 12vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.btn-start {
+    position: relative;
+    display: inline-block;
+    background-color: #31a8ff;
+    color: white;
+    padding: 15px 50px;
+    font-size: 24px;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(49, 168, 255, 0.4);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    font-family: 'Anuphan', sans-serif;
+    
+    /* สั่งให้ปุ่มเด้งเป็นจังหวะ */
+    animation: bounceBtn 1.5s infinite ease-in-out;
+}
+
+/* ตัวสร้างแสงวิ่ง Sheen Effect */
+.btn-start::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: rotateZ(60deg) translate(-5em, 7.5em); 
+}
+
+/* เมื่อเอาเมาส์ชี้ ให้หยุดเด้ง ขยายค้างไว้ และเล่นแสงวิ่ง */
+.btn-start:hover {
+    background-color: #0078d7;
+    box-shadow: 0 6px 20px rgba(0, 120, 215, 0.6);
+    animation: none; 
+    transform: scale(1.1); 
+}
+
+.btn-start:hover::after {
+    animation: sheen 1s forwards;
+}
+
+/* คีย์เฟรมสำหรับเอฟเฟกต์แสงวิ่ง */
+@keyframes sheen {
+    100% {
+        transform: rotateZ(60deg) translate(1em, -9em);
+    }
+}
+
+/* คีย์เฟรมสำหรับให้ปุ่มเด้ง */
+@keyframes bounceBtn {
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 4px 15px rgba(49, 168, 255, 0.4);
+    }
+    50% { 
+        transform: scale(1.08); 
+        box-shadow: 0 8px 25px rgba(49, 168, 255, 0.8); 
+    }
+}
+
+/* =========================================
+   ส่วนเสริม: โลโก้เกมและเอฟเฟกต์แสง
+========================================= */
+
+.logo-container {
+    position: absolute;
+    top: 45%; 
+    
+    /* [1] ปรับตำแหน่ง ซ้าย-ขวา ตรงนี้ (ค่าเดิมคือ 50% / หากต้องการให้ขยับขวาให้เพิ่มเลข เช่น 55%, 60%) */
+    left: 57%; 
+    
+    transform: translate(-50%, -50%);
+    
+    /* [2] ปรับขนาดความใหญ่ของโลโก้ ตรงนี้ (ค่าเดิม 80% / ปรับเพิ่มขึ้นเป็น 90% หรือ 100%) */
+    width: 100%; 
+    max-width: 1000px; /* ขยายขีดจำกัดความกว้างสูงสุด (เดิม 800px) */
+    
+    z-index: 5; 
+    animation: floatLogo 4s ease-in-out infinite;
+}
+
+.game-logo {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 25px rgba(0, 168, 255, 0.8)); 
+}
+
+/* =========================================
+   ส่วนจัดการแสงวิ่ง (Sheen Effect) ให้อยู่เฉพาะในโลโก้
+========================================= */
+.sheen-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; 
+    
+    /* ใช้ Mask เพื่อให้แสงแสดงเฉพาะจุดที่รูปโลโก้ทึบ แสงจะไม่ทะลุไปพื้นหลัง */
+    -webkit-mask-image: url('image/logo-game.svg');
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-image: url('image/logo-game.svg');
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    z-index: 6;
+}
+
+.sheen-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg); 
+    mix-blend-mode: overlay; 
+    
+    /* [3] ปรับความหน่วง/ความถี่ ของแสงวิ่ง ตรงนี้ (เลขมาก = รอนานขึ้นกว่าแสงจะวิ่งรอบใหม่ เช่น 8s หรือ 10s) */
+    animation: sheenLogo 3s infinite;
+}
+
+/* คีย์เฟรมสำหรับให้โลโก้ลอยขึ้นลง */
+@keyframes floatLogo {
+    0%, 100% { 
+        transform: translate(-50%, -50%); 
+    }
+    50% { 
+        transform: translate(-50%, -53%); 
+    }
+}
+
+/* คีย์เฟรมสำหรับแสงวิ่งพาดผ่าน */
+@keyframes sheenLogo {
+    0% { left: -150%; }
+    
+    /* [4] ปรับความเร็วขณะที่แสงกำลังไหลผ่าน ตรงนี้ 
+       (ถ้าปรับเป็น 50% แสงจะใช้เวลาไหลช้าๆ ครึ่งนึงของเวลาทั้งหมด) */
+    50% { left: 80%; } 
+    
+    100% { left: 100%; } /* รอจังหวะก่อนเริ่มวิ่งใหม่ */
+}

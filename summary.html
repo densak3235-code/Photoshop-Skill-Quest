@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สรุปผลภารกิจ - Photoshop Skill Quest</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ใช้ html2pdf.js สำหรับสร้างไฟล์ PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        body {
+            background-image: url('image/bg-game.svg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Anuphan', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .number-font { font-family: 'Chakra Petch', sans-serif; }
+        
+        /* ล็อกขนาดและตั้งค่าสีพื้นหลังทึบ เพื่อให้ PDF ทำงานได้สมบูรณ์แบบที่สุด */
+        #capture-area {
+            width: 1000px;
+            height: auto;
+            min-height: 650px;
+            box-sizing: border-box;
+            background-color: #1a1c23; /* สีพื้นดาร์กโหมดแบบด่าน 3 */
+            border: 1px solid #2d313f;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            padding: 40px;
+        }
+
+        .glass-panel {
+            background-color: #252836;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* วงแหวนคะแนนสไตล์ด่าน 3 */
+        .wow-score-wrapper { 
+            position: relative; width: 100px; height: 100px; border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center; 
+            background: transparent; border: 4px solid #00ffff; 
+            box-shadow: 0 0 15px rgba(0,255,255,0.4), inset 0 0 15px rgba(0,255,255,0.2); 
+        }
+        .wow-score-inner { 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2; 
+        }
+
+        /* สไตล์ตารางคะแนนย่อย */
+        .stage-box {
+            background: #252836;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .stage-box.passed { border-color: rgba(16, 185, 129, 0.5); }
+        .stage-box.special { border-color: rgba(168, 85, 247, 0.5); }
+    </style>
+</head>
+<body>
+
+    <!-- พื้นที่สำหรับการสร้าง PDF -->
+    <div id="capture-area" class="flex flex-col">
+        
+        <div class="flex flex-col h-full relative z-10">
+            
+            <!-- Header แบบด่าน 3 -->
+            <div class="flex justify-between items-start w-full border-b border-gray-700 pb-6 mb-8">
+                <div class="text-left">
+                    <h1 class="text-3xl font-bold text-cyan-400 mb-4 flex items-center gap-3" style="text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);">
+                        <i class="fa-solid fa-sparkles text-amber-300"></i> สรุปผลภารกิจทั้งหมด
+                    </h1>
+                    
+                    <!-- ส่วนแสดงชื่อและห้อง -->
+                    <div style="display: inline-block; background-color: #1f2937; border: 1px solid #4b5563; border-radius: 9999px; padding: 8px 25px;">
+                        <i class="fa-solid fa-user-astronaut" style="color: #22d3ee; margin-right: 8px; font-size: 18px;"></i>
+                        <span id="player-name-display" style="font-family: Tahoma, 'Cordia New', sans-serif; font-size: 20px; font-weight: bold; color: #ffffff; margin-right: 15px;"></span>
+                        
+                        <span style="color: #6b7280; margin-right: 15px; font-size: 20px;">|</span>
+                        
+                        <i class="fa-solid fa-satellite-dish" style="color: #c084fc; margin-right: 8px; font-size: 18px;"></i>
+                        <span id="room-text-display" style="font-family: Tahoma, 'Cordia New', sans-serif; font-size: 20px; font-weight: bold; color: #ffffff;"></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-gray-400 mb-1">เวลาที่ใช้รวมทั้งหมด</div>
+                        <div id="total-time-display" class="text-2xl font-bold text-white number-font">00:00</div>
+                    </div>
+                    <div class="wow-score-wrapper">
+                        <div class="wow-score-inner">
+                            <div class="text-4xl font-bold text-white number-font" style="text-shadow: 0 0 15px rgba(255, 255, 255, 0.8); line-height: 1;">
+                                <span id="stages-cleared-display">0</span><span class="text-2xl text-cyan-300" style="text-shadow: 0 0 10px rgba(103, 232, 249, 0.8);">/4</span>
+                            </div>
+                            <div class="text-xs text-cyan-100 mt-1">ด่าน</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- กริตสรุปผล 4 ด่าน -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <!-- ด่าน 1 -->
+                <div id="s1-box" class="stage-box">
+                    <div class="text-sm text-gray-400 mb-1">Stage 1</div>
+                    <div class="text-base font-bold text-cyan-300 mb-3">Tool Matching</div>
+                    <div id="s1-status" class="font-bold text-sm mb-1"></div>
+                    <div class="text-xs text-gray-500">เวลา: <span id="s1-time">0</span> วิ</div>
+                </div>
+
+                <!-- ด่าน 2 -->
+                <div id="s2-box" class="stage-box">
+                    <div class="text-sm text-gray-400 mb-1">Stage 2</div>
+                    <div class="text-base font-bold text-cyan-300 mb-3">Workflow</div>
+                    <div id="s2-status" class="font-bold text-sm mb-1"></div>
+                    <div class="text-xs text-gray-500">เวลา: <span id="s2-time">0</span> วิ</div>
+                </div>
+
+                <!-- ด่าน 3 (ด่านวิเคราะห์) -->
+                <div class="stage-box special">
+                    <div class="text-sm text-gray-400 mb-1">Stage 3</div>
+                    <div class="text-base font-bold text-purple-300 mb-2">Scenario Quiz</div>
+                    <div class="text-white font-bold text-xl number-font mb-1"><span id="s3-score-display">0</span>/10 <span class="text-xs font-normal">คะแนน</span></div>
+                    <div class="text-xs text-gray-500">เวลา: <span id="s3-time">0</span> วิ</div>
+                </div>
+
+                <!-- ด่าน 4 -->
+                <div id="s4-box" class="stage-box">
+                    <div class="text-sm text-gray-400 mb-1">Stage 4</div>
+                    <div class="text-base font-bold text-cyan-300 mb-3">Tool Flight</div>
+                    <div id="s4-status" class="font-bold text-sm mb-1"></div>
+                    <div class="text-xs text-gray-500">เวลา: <span id="s4-time">0</span> วิ</div>
+                </div>
+            </div>
+
+            <!-- ส่วนแสดงประวัติการเล่นด่าน 3 -->
+            <div class="glass-panel mb-6 border border-gray-700">
+                <h3 class="text-sm font-bold text-purple-400 mb-4 flex items-center gap-2 border-b border-gray-700 pb-2">
+                    <i class="fa-solid fa-chart-line"></i> ประวัติการเล่นด่าน 3 (Scenario Quiz)
+                </h3>
+                <div id="s3-history-container" class="min-h-[40px] flex items-center justify-start pl-2">
+                    <span class="text-gray-500 text-sm"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...</span>
+                </div>
+            </div>
+
+            <!-- ผลการประเมินโดยรวม (กล่องล่างสุด) -->
+            <div id="eval-box" class="w-full border rounded-xl p-6 flex items-center justify-between mt-auto">
+                <div class="text-left">
+                    <div class="text-sm font-bold text-gray-300 mb-2">
+                        ผลการประเมินศักยภาพโดยรวม
+                    </div>
+                    <div id="eval-desc-display" class="text-base font-medium">
+                        <!-- รายละเอียดประเมินผล -->
+                    </div>
+                </div>
+                <div id="eval-icon-text-display" class="text-4xl font-black flex items-center gap-4">
+                    <!-- ไอคอนและข้อความประเมิน -->
+                </div>
+            </div>
+
+        </div>
+    </div> 
+    <!-- จบพื้นที่แคปเจอร์ -->
+
+    <!-- ปุ่มควบคุมภายนอก -->
+    <div class="flex flex-wrap justify-center items-center gap-5 mt-8">
+        <!-- ปุ่มบันทึก PDF -->
+        <button id="pdfBtn" onclick="generatePDFReport()" class="px-8 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(0,255,255,0.3)] flex items-center gap-3">
+            <i class="fa-solid fa-file-pdf"></i> บันทึกผลเป็น PDF
+        </button>
+        <!-- ปุ่มเปลี่ยนผู้เล่น (กลับไปหน้า Login) -->
+        <a href="login.html" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(168,85,247,0.3)] flex items-center gap-3">
+            <i class="fa-solid fa-user-switch"></i> เปลี่ยนผู้เล่น
+        </a>
+        <!-- ปุ่มกลับหน้าแรก -->
+        <a href="index.html" class="px-8 py-3.5 bg-gray-700 hover:bg-gray-600 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center gap-3">
+            <i class="fa-solid fa-power-off"></i> ออกสู่เมนูหลัก
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. เช็คผู้เล่น ถ้าไม่มีข้อมูลให้เด้งกลับไปหน้า login
+            const playerName = localStorage.getItem("player_name");
+            if (!playerName) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            // 2. ดึงข้อมูลและแสดงผลส่วนหัว
+            const roomText = localStorage.getItem("room_text") || "ไม่ระบุห้อง";
+            document.getElementById("player-name-display").innerText = playerName;
+            document.getElementById("room-text-display").innerText = roomText;
+
+            // 3. ดึงข้อมูลด่านต่างๆ จาก LocalStorage
+            const s1Passed = localStorage.getItem("stage1_passed") === "true";
+            const s2Passed = localStorage.getItem("stage2_passed") === "true";
+            const s3Passed = localStorage.getItem("stage3_passed") === "true";
+            const s4Passed = localStorage.getItem("stage4_passed") === "true";
+
+            const s1Time = parseInt(localStorage.getItem("stage1_time") || "0");
+            const s2Time = parseInt(localStorage.getItem("stage2_time") || "0");
+            const s3Time = parseInt(localStorage.getItem("stage3_time") || "0");
+            const s4Time = parseInt(localStorage.getItem("stage4_time") || "0");
+
+            const s3Score = parseInt(localStorage.getItem("stage3_score") || "0");
+            const s3Total = 10;
+            const s3Percent = s3Total > 0 ? Math.round((s3Score / s3Total) * 100) : 0;
+
+            // 4. คำนวณเวลาที่ใช้รวมทั้งหมด
+            const totalTimeSeconds = s1Time + s2Time + s3Time + s4Time;
+            const minutes = Math.floor(totalTimeSeconds / 60);
+            const seconds = totalTimeSeconds % 60;
+            const timeDisplay = minutes > 0 
+                ? `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} นาที` 
+                : `${seconds} วินาที`;
+            document.getElementById("total-time-display").innerText = timeDisplay;
+
+            // 5. นับจำนวนด่านที่ผ่านและอัปเดตสเตตัสบน UI
+            let stagesCleared = 0;
+            const updateStageUI = (stageNum, passed, time) => {
+                if (passed) stagesCleared++;
+                const statusEl = document.getElementById(`s${stageNum}-status`);
+                const boxEl = document.getElementById(`s${stageNum}-box`);
+                if (document.getElementById(`s${stageNum}-time`)) {
+                    document.getElementById(`s${stageNum}-time`).innerText = time;
+                }
+                
+                if (passed) {
+                    if (boxEl && stageNum !== 3) boxEl.classList.add('passed');
+                    if (statusEl) {
+                        statusEl.innerHTML = `<i class="fa-solid fa-check-circle"></i> ผ่านภารกิจ`;
+                        statusEl.className = "text-emerald-400 font-bold text-sm mb-1";
+                    }
+                } else {
+                    if (statusEl) {
+                        statusEl.innerHTML = `<i class="fa-solid fa-times-circle"></i> ไม่ผ่าน`;
+                        statusEl.className = "text-red-400 font-bold text-sm mb-1";
+                    }
+                }
+            };
+
+            updateStageUI(1, s1Passed, s1Time);
+            updateStageUI(2, s2Passed, s2Time);
+            
+            // ด่าน 3 เป็นกรณีพิเศษ
+            if (s3Passed || s3Score > 0) stagesCleared++;
+            document.getElementById("s3-score-display").innerText = s3Score;
+            document.getElementById("s3-time").innerText = s3Time;
+
+            updateStageUI(4, s4Passed, s4Time);
+
+            document.getElementById("stages-cleared-display").innerText = stagesCleared;
+
+            // 6. เกณฑ์ประเมิน
+            let evaluation = "พอใช้";
+            let evalTextColor = "text-amber-400";
+            let evalBgClass = "bg-[#252836] border-amber-500/50";
+            let evalIcon = "fa-star-half-stroke";
+            let evalDesc = "เก่งมาก! แต่ยังสามารถฝึกฝนความแม่นยำได้อีกนะ";
+
+            if (s3Percent >= 80) {
+                evaluation = "ดีเยี่ยม";
+                evalTextColor = "text-emerald-400";
+                evalBgClass = "bg-[#1f2937] border-emerald-500/50";
+                evalIcon = "fa-crown";
+                evalDesc = "สมบูรณ์แบบ! คุณคือยอดฝีมือขั้นสูง!";
+            } else if (s3Percent >= 60) {
+                evaluation = "ดี";
+                evalTextColor = "text-cyan-400";
+                evalBgClass = "bg-[#252836] border-cyan-500/50";
+                evalIcon = "fa-thumbs-up";
+                evalDesc = "ยอดเยี่ยม! ทักษะของคุณเฉียบคมมาก";
+            }
+
+            const evalBox = document.getElementById("eval-box");
+            evalBox.className = `w-full border rounded-xl p-6 flex items-center justify-between mt-auto ${evalBgClass}`;
+            
+            const evalDescEl = document.getElementById("eval-desc-display");
+            evalDescEl.className = `text-base font-medium ${evalTextColor}`;
+            evalDescEl.innerText = evalDesc;
+
+            const evalIconTextEl = document.getElementById("eval-icon-text-display");
+            evalIconTextEl.className = `text-4xl font-black flex items-center gap-4 ${evalTextColor}`;
+            evalIconTextEl.innerHTML = `<i class="fa-solid ${evalIcon} opacity-80"></i> ${evaluation}`;
+
+            // 7. โหลดประวัติการเล่นด่าน 3 (Stage 3 History)
+            const attempts = JSON.parse(localStorage.getItem('stage3_attempts') || '[]');
+            const historyContainer = document.getElementById('s3-history-container');
+            
+            if (attempts.length > 0) {
+                let html = `<div class="flex gap-3 flex-wrap items-center">`;
+                attempts.forEach((score, index) => {
+                    let badgeColor = score >= 7 ? 'bg-emerald-900/50 border-emerald-500 text-emerald-400' : 'bg-gray-800 border-gray-600 text-gray-400';
+                    html += `<div class="px-3 py-1 rounded-lg border ${badgeColor} text-sm font-bold number-font shadow-md">
+                                รอบ ${index + 1} <i class="fa-solid fa-caret-right text-xs mx-1 opacity-50"></i> ${score}/10
+                             </div>`;
+                });
+                html += `</div>`;
+                historyContainer.innerHTML = html;
+            } else {
+                historyContainer.innerHTML = `<span class="text-gray-500 text-sm">ไม่มีประวัติการเล่น</span>`;
+            }
+        });
+
+        // ฟังก์ชันสร้าง PDF (ทำงานเหมือนเดิม ห้ามลบ)
+        function generatePDFReport() {
+            const btn = document.getElementById('pdfBtn');
+            const originalText = btn.innerHTML;
+            
+            // เปลี่ยนสถานะปุ่ม
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังสร้าง PDF...';
+            btn.disabled = true;
+
+            const element = document.getElementById('capture-area');
+            const playerName = localStorage.getItem("player_name") || "ผู้เล่นลึกลับ";
+            
+            // เคล็ดลับแก้ปัญหาฟอนต์: แปลงกระดานเป็นภาพ (JPEG) ก่อนวางลง PDF
+            const opt = {
+                margin:       0,
+                filename:     `MissionReport_${playerName}.pdf`,
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    letterRendering: true, 
+                    backgroundColor: '#1a1c23' // ล็อกสีพื้นหลัก
+                },
+                jsPDF:        { unit: 'px', format: [1000, element.offsetHeight], orientation: 'landscape' }
+            };
+
+            // ดีเลย์รอฟอนต์ไอคอนให้แน่ใจว่าเรนเดอร์ติด 100%
+            setTimeout(() => {
+                document.fonts.ready.then(function() {
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
+                });
+            }, 600); 
+        }
+    </script>
+</body>
+</html>

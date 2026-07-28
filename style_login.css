@@ -1,0 +1,277 @@
+/* =========================================
+   ไฟล์: style_login.css (ฉบับสมบูรณ์)
+   - ขอบไฟวิ่งไซไฟ
+   - Swanky Dropdown 
+   - แถบเลื่อนรายชื่อ
+========================================= */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url('image/bg-game.svg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    font-family: 'Anuphan', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+    overflow: hidden;
+}
+
+/* =========================================
+   กล่อง Login หลัก และ ไฟวิ่งขอบ
+========================================= */
+.login-box {
+    position: relative;
+    padding: 40px;
+    border-radius: 20px; 
+    width: 360px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(49, 168, 255, 0.3);
+    text-align: center;
+    overflow: hidden; 
+    background: transparent; 
+    z-index: 1;
+}
+
+/* แผ่นแสงหมุนด้านหลัง */
+.login-box::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent 70%, #31a8ff 80%, #00ffff 100%);
+    animation: rotateGlow 3s linear infinite;
+    z-index: -2; 
+}
+
+/* หน้ากากสีเทาเข้ม ปิดทับตรงกลางกล่อง */
+.login-box::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    background-color: #242424; 
+    border-radius: 17px; 
+    z-index: -1;
+}
+
+/* ดันเนื้อหา (ข้อความและฟอร์ม) ขึ้นมาด้านหน้าสุด */
+.login-box h2, 
+.login-box form {
+    position: relative;
+    z-index: 2;
+}
+
+.login-box h2 {
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #fff 0%, #31a8ff 100%); 
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@keyframes rotateGlow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* =========================================
+   ป้ายกำกับทั่วไป (Label)
+========================================= */
+.input-group {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.input-group > label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #b3b3b3;
+    font-weight: 500;
+}
+
+/* =========================================
+   Swanky Dropdown (เลือกห้องเรียน & รายชื่อ)
+========================================= */
+.hide-cb,
+.dropdown-list input[type="radio"] {
+    display: none;
+}
+
+.custom-swanky-wrapper {
+    margin: 0 auto 25px auto;
+    width: 100%;
+}
+
+.swanky-dropdown {
+    position: relative;
+    width: 100%;
+    background: #2a394f; /* สีพื้นหลังกล่อง Dropdown */
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.dropdown-header {
+    padding: 15px 20px;
+    display: block;
+    position: relative;
+    color: #eff4fa;
+    cursor: pointer;
+    transition: background 0.3s, text-indent 0.15s;
+    font-size: 15px;
+    font-family: 'Anuphan', sans-serif;
+    margin-bottom: 0 !important; 
+}
+
+.dropdown-header:hover {
+    background: #212e41;
+    text-indent: 4px;
+}
+
+.dropdown-header .bar {
+    width: 0px;
+    transition: width 0.15s;
+    height: 2px;
+    position: absolute;
+    background: #355789;
+    bottom: 0;
+    left: 0;
+}
+
+.dropdown-header:hover .bar {
+    width: 100%;
+}
+
+.dropdown-header .lil_arrow {
+    width: 8px;
+    height: 8px;
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-top: 2px solid white;
+    border-right: 2px solid white;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.hide-cb:checked + .swanky-dropdown .dropdown-header {
+    background: #212e41;
+}
+
+.hide-cb:checked + .swanky-dropdown .lil_arrow {
+    transform: translateY(-50%) rotate(135deg); 
+    border-color: #14a3f9;
+}
+
+/* =========================================
+   รายการรายชื่อนักเรียนด้านใน
+========================================= */
+.dropdown-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0; 
+    transition: max-height 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    overflow-y: hidden; 
+}
+
+.hide-cb:checked + .swanky-dropdown .dropdown-list {
+    max-height: 200px; 
+    overflow-y: auto; 
+}
+
+.dropdown-list::-webkit-scrollbar {
+    width: 6px;
+}
+.dropdown-list::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+.dropdown-list::-webkit-scrollbar-thumb {
+    background: #31a8ff;
+    border-radius: 10px;
+}
+
+.dropdown-list li {
+    position: relative;
+    background: #15a4fa; /* สีพื้นหลังของแต่ละตัวเลือก */
+    box-shadow: 0px 0px #126CA1 inset;
+    transition: background 0.3s, box-shadow 0.3s, text-indent 0.3s;
+    opacity: 0;
+    left: -100%; 
+}
+
+.hide-cb:checked + .swanky-dropdown .dropdown-list li {
+    animation: slideIn 0.3s forwards cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.hide-cb:checked + .swanky-dropdown .dropdown-list li:nth-child(1) { animation-delay: 0.05s; }
+.hide-cb:checked + .swanky-dropdown .dropdown-list li:nth-child(2) { animation-delay: 0.1s; }
+.hide-cb:checked + .swanky-dropdown .dropdown-list li:nth-child(n+3) { animation-delay: 0.15s; }
+
+.dropdown-list li label {
+    display: block;
+    padding: 15px 20px;
+    color: white;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 15px;
+    text-indent: 20px; 
+    transition: text-indent 0.3s;
+    margin-bottom: 0 !important;
+}
+
+.dropdown-list li:hover {
+    background: #0c93e4; /* สีตอนเอาเมาส์ชี้รายชื่อ */
+    box-shadow: 5px 0px #126ca1 inset;
+}
+
+.dropdown-list li:hover label {
+    text-indent: 28px; 
+}
+
+@keyframes slideIn {
+    from { left: -100%; opacity: 0; }
+    to { left: 0; opacity: 1; }
+}
+
+/* =========================================
+   ปุ่มกดยืนยัน (Submit)
+========================================= */
+.btn-submit {
+    background-color: #31a8ff; 
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    width: 100%;
+    font-family: 'Anuphan', sans-serif;
+    box-shadow: 0 4px 15px rgba(49, 168, 255, 0.3);
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    position: relative; /* ดันปุ่มให้อยู่ข้างหน้า */
+    z-index: 5;
+}
+
+.btn-submit:hover {
+    background-color: #0078d7;
+    box-shadow: 0 6px 20px rgba(0, 120, 215, 0.5);
+    transform: translateY(-2px);
+}

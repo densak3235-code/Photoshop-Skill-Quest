@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 3 - Scenario Quiz</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* บังคับหน้าเว็บให้พอดีจอ 100% ปิด Scroll เด็ดขาด */
+        body {
+            margin: 0; padding: 0;
+            background-image: url('image/bg-game.svg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            font-family: 'Anuphan', sans-serif; color: #fff;
+            display: flex; flex-direction: column; 
+            height: 100vh; overflow: hidden; 
+        }
+
+        /* ==========================================
+           1. UI ด้านบน (Top Bar) ตรึงมุมเป๊ะ 100%
+        ========================================== */
+        .top-bar-container {
+            width: 100%; height: 110px; 
+            position: relative; flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .left-badges-group { 
+            position: absolute; top: 15px; left: 30px; 
+            display: flex; flex-direction: column; gap: 8px; align-items: flex-start; 
+        }
+        
+        .right-profile-group { 
+            position: absolute; top: 15px; right: 30px; 
+        }
+
+        .center-group { 
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px; 
+            width: 100%; max-width: 600px;
+        }
+
+        /* --- ดีไซน์ป้ายซ้าย --- */
+        .level-badge-wrapper { position: relative; padding: 2px; border-radius: 35px; overflow: hidden; display: inline-flex; width: fit-content; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); }
+        .level-badge-wrapper::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, #00ffff, #31a8ff); animation: spinGlow 4s linear infinite; }
+        .level-badge { background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px); padding: 4px 15px 4px 6px; border-radius: 33px; display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; width: 100%; box-sizing: border-box; }
+        .level-badge .number { background: linear-gradient(135deg, #00ffff, #31a8ff); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: #111; box-shadow: 0 0 10px rgba(49, 168, 255, 0.5); }
+        .level-badge .info { display: flex; flex-direction: column; line-height: 1.1; text-align: left;}
+        .level-badge .name { font-size: 14px; font-weight: bold; color: #ffffff; }
+        .level-badge .sub { font-size: 10px; color: #00ffff; }
+
+        .progress-badge { background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px); padding: 4px 10px; border-radius: 30px; border: 1px solid rgba(49, 168, 255, 0.4); display: flex; align-items: center; gap: 5px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); height: 26px; box-sizing: border-box; }
+        .progress-dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 9px; font-weight: bold; color: #999; transition: all 0.4s ease; }
+        .progress-dot.active { background: linear-gradient(135deg, #00ffff, #31a8ff); color: #111; border: none; box-shadow: 0 0 10px rgba(49, 168, 255, 0.8); transform: scale(1.2); }
+        .progress-dot.completed { background: rgba(49, 168, 255, 0.4); color: #fff; border: 1px solid rgba(49, 168, 255, 0.6); }
+
+        /* --- ดีไซน์ป้ายขวา --- */
+        .player-profile { background: rgba(30, 30, 30, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(49, 168, 255, 0.4); padding: 4px 15px; border-radius: 30px; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); }
+        .player-profile .avatar { background: linear-gradient(135deg, #31a8ff, #00ffff); width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 16px; color: #111; font-weight: bold;}
+        .player-profile .info { display: flex; flex-direction: column; text-align: left; line-height: 1.1; }
+        .player-profile .name { font-size: 14px; font-weight: bold; color: #ffffff; }
+        .player-profile .room { font-size: 11px; color: #00ffff; }
+
+        /* --- ดีไซน์ป้ายกลาง --- */
+        .instruction-box { background-color: #ffffff; color: #111111; padding: 6px 25px; border-radius: 30px; font-size: 14px; font-weight: bold; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5); border: 2px solid #31a8ff; margin: 0; text-align: center; width: fit-content; }
+        
+        .timer-container { 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            background: rgba(30, 30, 30, 0.9); backdrop-filter: blur(10px); 
+            border: 2px solid rgba(49, 168, 255, 0.5); padding: 6px 20px; 
+            border-radius: 30px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); 
+            width: 100%; max-width: 400px; box-sizing: border-box;
+        }
+        .timer-text { 
+            font-size: 22px; font-weight: bold; color: #fff; width: 40px; 
+            text-align: right; line-height: 1; 
+        }
+        .timer-bar-bg { 
+            flex: 1; height: 14px; background: #222; border-radius: 10px; 
+            overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); 
+        }
+        .timer-bar-fill { 
+            width: 100%; height: 100%; background: linear-gradient(90deg, #00ffff, #31a8ff); 
+            transition: width 1s linear, background 0.3s ease; border-radius: 10px;
+        }
+        .timer-bar-fill.danger { background: linear-gradient(90deg, #ff4500, #dc143c); box-shadow: 0 0 10px #ff4500; }
+
+        /* ==========================================
+           2. โครงสร้างเกมบอร์ด (คำถาม)
+        ========================================== */
+        .game-board-wrapper {
+            flex: 1; width: 100%; 
+            display: flex; justify-content: center; align-items: center; 
+            padding-bottom: 20px; box-sizing: border-box; overflow: hidden;
+        }
+
+        .game-board { 
+            display: flex; gap: 30px; width: 95%; max-width: 1300px; 
+            height: 95%; max-height: 650px; 
+            align-items: stretch; 
+        }
+
+        .scenario-panel {
+            flex: 1.2; background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(15px);
+            border-radius: 20px; border: 1px solid rgba(49, 168, 255, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; position: relative; overflow: hidden;
+        }
+        .scenario-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, #00ffff, #31a8ff); }
+
+        .scenario-image-box {
+            width: 100%; flex: 1; min-height: 0; 
+            background: #111; border-radius: 12px; border: 2px dashed rgba(255,255,255,0.2);
+            display: flex; justify-content: center; align-items: center; margin-bottom: 15px; padding: 5px; box-sizing: border-box;
+        }
+        .scenario-image-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; } 
+        
+        .question-box {
+            width: 100%; background: rgba(49, 168, 255, 0.1); border-left: 5px solid #31a8ff;
+            padding: 15px 20px; border-radius: 8px; box-sizing: border-box; flex-shrink: 0; 
+        }
+        .question-box h3 { margin: 0 0 5px 0; color: #00ffff; font-size: 18px; }
+        .question-box p { margin: 0; font-size: 16px; line-height: 1.4; color: #fff; }
+
+        .choices-panel {
+            flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 15px;
+        }
+        .choice-btn {
+            border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px;
+            cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            color: #fff; font-family: 'Anuphan', sans-serif; text-shadow: 0 2px 5px rgba(0,0,0,0.5); border: 2px solid transparent;
+            padding: 10px; box-sizing: border-box;
+        }
+        .choice-btn img { width: 70px; height: 70px; object-fit: contain; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
+        .choice-btn .tool-name { font-weight: bold; pointer-events: none; text-align: center; line-height: 1.2; }
+
+        .choice-btn.color-0 { background: linear-gradient(145deg, #ff1a75, #b30047); border: 2px solid #ff4d94; }
+        .choice-btn.color-0:hover { box-shadow: 0 8px 25px rgba(255, 26, 117, 0.6); transform: translateY(-5px); }
+        .choice-btn.color-1 { background: linear-gradient(145deg, #00b359, #008040); border: 2px solid #00e673; }
+        .choice-btn.color-1:hover { box-shadow: 0 8px 25px rgba(0, 179, 89, 0.6); transform: translateY(-5px); }
+        .choice-btn.color-2 { background: linear-gradient(145deg, #0078d7, #005bb5); border: 2px solid #31a8ff; }
+        .choice-btn.color-2:hover { box-shadow: 0 8px 25px rgba(0, 120, 215, 0.6); transform: translateY(-5px); }
+        .choice-btn.color-3 { background: linear-gradient(145deg, #e68a00, #b36b00); border: 2px solid #ffcc33; }
+        .choice-btn.color-3:hover { box-shadow: 0 8px 25px rgba(230, 138, 0, 0.6); transform: translateY(-5px); }
+        .choice-btn:active { transform: scale(0.95); }
+
+        /* ==========================================
+           3. หน้าต่างแดชบอร์ดสรุปคะแนน (ปรับให้พอดี 100vh ไม่มี Scroll)
+        ========================================== */
+        .summary-dashboard {
+            display: none; flex-direction: column; justify-content: space-between; align-items: center; 
+            width: 95%; max-width: 1000px; height: 92vh; 
+            background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(15px); 
+            border-radius: 20px; border: 2px solid rgba(49, 168, 255, 0.4); box-shadow: 0 15px 40px rgba(0,0,0,0.8); 
+            padding: 20px 30px; box-sizing: border-box; 
+            overflow: hidden; 
+        }
+
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; flex-shrink: 0; }
+        .dashboard-title h1 { color: #00ffff; font-size: 28px; margin: 0; text-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+        .dashboard-title p { color: #ffeb3b; font-size: 16px; font-weight: bold; margin: 5px 0 0 0; }
+        
+        .score-display { display: flex; align-items: center; gap: 15px; }
+        .wow-score-wrapper { position: relative; width: 90px; height: 90px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(49, 168, 255, 0.3); background: #333; }
+        .wow-score-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#00ffff 0%, #333 0%); transition: background 1.5s ease-out; }
+        .wow-score-inner { width: 75px; height: 75px; background: #111; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2; border: 2px solid rgba(255,255,255,0.05); }
+        .wow-score-inner .score-text { font-size: 24px; font-weight: bold; color: #00ffff; line-height: 1; }
+        .wow-score-inner .score-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; margin-bottom: 15px; flex-shrink: 0; }
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; }
+        .stat-card h4 { margin: 0 0 5px 0; font-size: 14px; color: #00ffff; }
+        .stat-card .val { font-size: 22px; font-weight: bold; color: #fff; }
+
+        .charts-wrapper { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; width: 100%; margin-bottom: 15px; flex: 1; min-height: 0; }
+        
+        .chart-box { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        .chart-title { margin: 0 0 10px 0; font-size: 16px; color: #fff; text-align: center; width: 100%; }
+
+        .pie-chart { width: 100px; height: 100px; border-radius: 50%; box-shadow: 0 0 15px rgba(0,0,0,0.5); margin-bottom: 15px; transition: background 1s ease-out; flex-shrink: 0;}
+        .legend-container { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 0 10px; box-sizing: border-box; }
+        .legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #ddd; }
+        .legend-color-box { display: flex; align-items: center; gap: 8px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+
+        .v-chart-content { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; height: 120px; padding-top: 5px; }
+        .v-bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 8%; }
+        .v-bar-time { font-size: 11px; color: #00ffff; margin-bottom: 4px; font-weight: bold; opacity: 0; animation: fadeIn 0.5s forwards 1s; }
+        .v-bar-bg { width: 100%; max-width: 24px; flex: 1; background: rgba(255,255,255,0.05); border-radius: 4px 4px 0 0; position: relative; display: flex; align-items: flex-end; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        .v-bar-fill { width: 100%; border-radius: 4px 4px 0 0; height: 0%; transition: height 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .v-bar-label { font-size: 11px; color: #ccc; margin-top: 6px; font-weight: bold; }
+
+        /* --- กล่องสถิติการเล่น --- */
+        .attempt-history-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; width: 100%; text-align: center; box-sizing: border-box; flex-shrink: 0;}
+        .attempt-history-box h4 { color: #fff; margin: 0 0 5px 0; font-size: 14px; }
+        .attempt-list { color: #00ffff; font-size: 14px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+
+        .dashboard-actions { display: flex; gap: 15px; justify-content: center; width: 100%; flex-shrink: 0; }
+        .btn-view-answers { background: linear-gradient(135deg, #0078d7, #005bb5); border: 2px solid #31a8ff; color: white; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0, 120, 215, 0.5); font-family: 'Anuphan', sans-serif; }
+        .btn-view-answers:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0, 120, 215, 0.8); }
+        
+        .btn-unlock { background: linear-gradient(135deg, #32CD32, #228B22); border: 2px solid #7CFC00; color: white; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 15px rgba(50, 205, 50, 0.5); font-family: 'Anuphan', sans-serif; transition: all 0.3s; }
+        .btn-unlock:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(50, 205, 50, 0.8); }
+
+        /* ==========================================
+           Modal เฉลยคำตอบ
+        ========================================== */
+        .answers-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 2000; flex-direction: column; align-items: center; padding: 30px 0; overflow-y: auto; }
+        .answers-container { width: 90%; max-width: 900px; background: #111; border: 2px solid #31a8ff; border-radius: 20px; padding: 20px 30px; box-shadow: 0 0 30px rgba(49, 168, 255, 0.3); }
+        .answers-container h2 { color: #00ffff; text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 26px; }
+        .expl-item { background: rgba(255, 255, 255, 0.05); border-left: 5px solid #31a8ff; padding: 10px 20px; border-radius: 12px; display: flex; gap: 20px; align-items: center; margin-bottom: 10px; }
+        .expl-item img { width: 100px; height: 80px; object-fit: cover; background: #000; border-radius: 8px; padding: 4px; flex-shrink: 0; }
+        .expl-details { flex: 1; text-align: left; }
+        .expl-details h4 { margin: 0 0 5px 0; color: #fff; font-size: 16px; line-height: 1.3; }
+        .expl-details .correct-ans { color: #32CD32; font-size: 14px; font-weight: bold; margin-bottom: 3px; }
+        .expl-details .user-ans { font-size: 13px; font-weight: bold; }
+        .btn-close-answers { background: #ff4500; border: none; color: white; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; margin-top: 15px; display: block; margin-left: auto; margin-right: auto; transition: all 0.3s; }
+        .btn-close-answers:hover { background: #cc3700; transform: scale(1.05); }
+
+        /* ==========================================
+           Modal พื้นฐาน, กติกา & Countdown
+        ========================================== */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background: linear-gradient(145deg, #1e2a38, #111822); padding: 30px; border-radius: 20px; border: 2px solid #31a8ff; box-shadow: 0 0 30px rgba(49, 168, 255, 0.4); text-align: center; max-width: 450px; color: white; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .btn-modal { background-color: #31a8ff; color: white; border: none; padding: 10px 30px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; font-family: 'Anuphan', sans-serif; transition: all 0.3s; }
+        .btn-modal:hover { background-color: #0078d7; transform: scale(1.05); }
+
+        /* --- หน้าต่างกติกา --- */
+        .rules-box { position: relative; display: flex; flex-direction: column; align-items: center; animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .blink-alert-text { color: #ffea00; font-size: 20px; font-weight: bold; margin-bottom: 12px; text-shadow: 0 0 10px rgba(255, 234, 0, 0.8); animation: textBlink 1s infinite; }
+        .rules-img-wrapper { position: relative; padding: 5px; border-radius: 24px; overflow: hidden; display: flex; box-shadow: 0 0 25px rgba(255, 80, 0, 0.6); animation: pulseFireBox 2s infinite; }
+        .rules-img-wrapper::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, #ff3300, #ffcc00, transparent); animation: spinGlow 2.5s linear infinite; }
+        .rules-img { position: relative; z-index: 1; max-width: 80vw; max-height: 60vh; width: auto; border-radius: 20px; background: rgba(20, 20, 20, 0.9); }
+        .btn-start-game { margin-top: -20px; z-index: 10; font-family: 'Anuphan', sans-serif; font-size: 20px; font-weight: bold; padding: 12px 60px; background: linear-gradient(90deg, #00ff73, #00b33c); color: #fff; border: 2px solid #00ff73; border-radius: 50px; cursor: pointer; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); box-shadow: 0 0 20px rgba(0, 255, 115, 0.7); animation: pulseGreen 1.2s infinite; transition: transform 0.2s, background 0.3s; }
+        .btn-start-game:active { transform: scale(0.95); }
+        .btn-start-game:hover { background: linear-gradient(90deg, #33ff99, #00cc44); }
+
+        #countdown-title { font-size: 26px; color: #fff; margin-bottom: 10px; }
+        #countdown-number { font-size: 100px; font-weight: bold; color: #00ffff; text-shadow: 0 0 25px #00ffff; }
+        .animate-pop { animation: pop 0.8s ease; }
+
+        @keyframes dropIn { 0% { transform: translateY(-30px) scale(0.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes textBlink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.98); } }
+        @keyframes pulseFireBox { 0% { box-shadow: 0 0 20px rgba(255, 80, 0, 0.6); } 50% { box-shadow: 0 0 35px rgba(255, 150, 0, 0.9); } 100% { box-shadow: 0 0 20px rgba(255, 80, 0, 0.6); } }
+        @keyframes pulseGreen { 0% { box-shadow: 0 0 15px rgba(0, 255, 115, 0.6); transform: scale(1); } 50% { box-shadow: 0 0 30px rgba(0, 255, 115, 1); transform: scale(1.05); } 100% { box-shadow: 0 0 15px rgba(0, 255, 115, 0.6); transform: scale(1); } }
+        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes spinGlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <script>
+        // Check Player Data
+        const playerName = localStorage.getItem("player_name");
+        const roomText = localStorage.getItem("room_text");
+
+        if (!playerName) {
+            window.location.href = "login.html";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (playerName) {
+                document.getElementById("player-name-display").textContent = playerName;
+            }
+            if (roomText) {
+                document.getElementById("player-room-display").textContent = roomText;
+            }
+        });
+    </script>
+
+    <div id="rules-modal-overlay" class="modal-overlay">
+        <div class="rules-box">
+            <div class="blink-alert-text">⚠️ โปรดอ่านกติกาก่อนเริ่มเกม ⚠️</div>
+            <div class="rules-img-wrapper">
+                <img src="image/Rules/rules-st3.svg" alt="Rules Stage 3" class="rules-img" onerror="this.src='image/rules-st3.svg'; this.onerror=null;">
+            </div>
+            <button class="btn-start-game" onclick="startFromRules()">เริ่มเกม</button>
+        </div>
+    </div>
+
+    <div id="alert-modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-box" id="modal-content-box"></div>
+    </div>
+
+    <div id="countdown-overlay" class="modal-overlay" style="display: none;">
+        <div id="countdown-title">ข้อที่ <span id="cd-question-num">1</span> เตรียมตัว...</div>
+        <div id="countdown-number">3</div>
+    </div>
+
+    <div id="answers-modal" class="answers-modal">
+        <div class="answers-container">
+            <h2>เฉลยคำตอบอย่างละเอียด</h2>
+            <div id="expl-list"></div>
+            <button class="btn-close-answers" onclick="closeAnswers()">ปิดหน้าต่างเฉลย</button>
+        </div>
+    </div>
+
+    <div class="top-bar-container" id="top-bar-section">
+        <div class="left-badges-group">
+            <div class="level-badge-wrapper">
+                <div class="level-badge">
+                    <div class="number">3</div>
+                    <div class="info">
+                        <span class="name">Scenario Quiz</span>
+                        <span class="sub">Level 3</span>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-badge" id="progress-badge">
+                <div class="progress-dot">1</div><div class="progress-dot">2</div>
+                <div class="progress-dot">3</div><div class="progress-dot">4</div>
+                <div class="progress-dot">5</div><div class="progress-dot">6</div>
+                <div class="progress-dot">7</div><div class="progress-dot">8</div>
+                <div class="progress-dot">9</div><div class="progress-dot">10</div>
+            </div>
+        </div>
+
+        <div class="center-group">
+            <div class="instruction-box" id="instruction-box">วิเคราะห์ภาพสถานการณ์ปัญหา แล้วคลิกเลือกคำตอบที่ถูกต้อง</div>
+            <div class="timer-container" id="timer-container">
+                <div class="timer-text" id="timer-display">20</div>
+                <div class="timer-bar-bg"><div class="timer-bar-fill" id="timer-bar-fill"></div></div>
+            </div>
+        </div>
+
+        <div class="right-profile-group">
+            <div class="player-profile">
+                <div class="avatar">🎮</div>
+                <div class="info">
+                    <span class="name" id="player-name-display">ผู้เล่น</span>
+                    <span class="room" id="player-room-display"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-board-wrapper" id="game-board-wrapper">
+        <div class="game-board" id="game-board">
+            <div class="scenario-panel">
+                <div class="scenario-image-box">
+                    <img id="question-image" src="" alt="Question Image" style="display: none;">
+                </div>
+                <div class="question-box">
+                    <h3>❓ วิเคราะห์ปัญหา:</h3>
+                    <p id="question-text">กำลังโหลดคำถาม...</p>
+                </div>
+            </div>
+
+            <div class="choices-panel" id="choices-container"></div>
+        </div>
+    </div>
+
+    <div class="game-board-wrapper" id="dashboard-wrapper" style="display:none;">
+        <div class="summary-dashboard" id="summary-dashboard">
+            <div class="dashboard-header">
+                <div class="dashboard-title">
+                    <h1 id="header-status">✨ ภารกิจสำเร็จ ✨</h1>
+                    <p id="dashboard-compliment">ประมวลผลเสร็จสิ้น...</p>
+                </div>
+                <div class="score-display">
+                    <div style="text-align:right;">
+                        <div style="font-size:14px; color:#ccc;">คะแนนรวมของคุณ</div>
+                    </div>
+                    <div class="wow-score-wrapper">
+                        <div class="wow-score-ring" id="wow-score-ring"></div>
+                        <div class="wow-score-inner">
+                            <span class="score-text" id="dashboard-score">0/10</span>
+                            <span class="score-sub">คะแนน</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>🎯 ความแม่นยำ</h4>
+                    <div class="val" id="stat-accuracy">0%</div>
+                </div>
+                <div class="stat-card">
+                    <h4>⏱️ เวลาเฉลี่ยต่อข้อ</h4>
+                    <div class="val" id="stat-avg-time">0 วิ</div>
+                </div>
+                <div class="stat-card">
+                    <h4>⚡ ตอบเร็วที่สุด</h4>
+                    <div class="val" id="stat-fastest-time">0 วิ</div>
+                </div>
+            </div>
+
+            <div class="charts-wrapper">
+                <div class="chart-box">
+                    <h3 class="chart-title">สัดส่วนการตอบ</h3>
+                    <div class="pie-chart" id="pie-chart"></div>
+                    <div class="legend-container" id="pie-legend">
+                        <div class="legend-row">
+                            <div class="legend-color-box"><div class="legend-color" style="background: #32CD32;"></div>ตอบถูก</div>
+                            <span id="lg-correct">0</span>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-color-box"><div class="legend-color" style="background: #ff4500;"></div>ตอบผิด</div>
+                            <span id="lg-wrong">0</span>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-color-box"><div class="legend-color" style="background: #666;"></div>หมดเวลา</div>
+                            <span id="lg-timeout">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-box">
+                    <h3 class="chart-title">เวลาที่ใช้ไปในแต่ละข้อ (วินาที)</h3>
+                    <div class="v-chart-content" id="v-chart-content"></div>
+                </div>
+            </div>
+
+            <div class="attempt-history-box" id="attempt-history-box" style="display: none;">
+                <h4 id="history-title">📊 สถิติคะแนนในรอบที่ผ่านมา</h4>
+                <div class="attempt-list" id="attempt-list"></div>
+            </div>
+
+            <div class="dashboard-actions" id="dashboard-actions"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // Audio System (ระทึกขวัญ + ล็อกคำตอบ + แจ้งเตือนเวลา)
+        // ==========================================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let bgmInterval = null;
+        const suspenseNotes = [196.00, 220.00, 196.00, 233.08]; // G3, A3, G3, A#3
+        let noteIdx = 0;
+
+        function startBGM() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            stopBGM(); 
+            bgmInterval = setInterval(() => {
+                if (audioCtx.state === 'suspended') return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(suspenseNotes[noteIdx % suspenseNotes.length], audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+                noteIdx++;
+            }, 400); 
+        }
+
+        function stopBGM() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        function playLockSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+            
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc2.start();
+                osc2.stop(audioCtx.currentTime + 0.2);
+            }, 100);
+        }
+
+        // เพิ่มฟังก์ชันเสียงเตือนเวลาใกล้หมด (Tick)
+        function playTickSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        const initialQuizData = [
+            { image: "case/case1.svg", question: "จากภาพที่พบ นางแบบมีรอยสิวและจุดด่างดำบนใบหน้า เราควรเลือกใช้เครื่องมือใดในการลบรอยสิวเพื่อซ่อมแซมผิว?", choices: [ { name: "Crop Tool", img: "image/Tools/Crop Tool.svg" }, { name: "Spot Healing Brush", img: "image/Tools/Spot Healing Brush Tool.svg" }, { name: "Magic Wand Tool", img: "image/Tools/Magic Wand Tool.svg" }, { name: "Move Tool", img: "image/Tools/Move Tool.svg" } ], correctIndex: 1 },
+            { image: "case/case2.svg", question: "หากต้องการย้ายตำแหน่งของวัตถุ หรือกราฟิกจากจุดหนึ่งไปยังอีกจุดหนึ่ง ควรใช้เครื่องมือใด?", choices: [ { name: "Move Tool", img: "image/Tools/Move Tool.svg" }, { name: "Lasso Tool", img: "image/Tools/Lasso Tool.svg" }, { name: "Eyedropper Tool", img: "image/Tools/Eyedropper Tool.svg" }, { name: "Zoom Tool", img: "image/Tools/Zoom Tool.svg" } ], correctIndex: 0 },
+            { image: "case/case3.svg", question: "ต้องการเลือกพื้นที่พื้นหลังที่มีสีเดียวกันอย่างรวดเร็วเพื่อทำการลบหรือไดคัท ควรใช้เครื่องมือใด?", choices: [ { name: "Rectangular Marquee", img: "image/Tools/Rectangular Marquee Tool.svg" }, { name: "Spot Healing Brush", img: "image/Tools/Spot Healing Brush Tool.svg" }, { name: "Magic Wand Tool", img: "image/Tools/Magic Wand Tool.svg" }, { name: "Quick Selection", img: "image/Tools/Quick Selection Tool.svg" } ], correctIndex: 2 },
+            { image: "case/case4.svg", question: "ต้องการเทสีพื้นหลังให้เป็นแบบไล่ระดับสี (ไล่เฉดสี) ควรใช้เครื่องมือใด?", choices: [ { name: "Gradient Tool", img: "image/Tools/gradient tool.svg" }, { name: "Paint Bucket Tool", img: "image/Tools/paint bucket tool.svg" }, { name: "Eyedropper Tool", img: "image/Tools/Eyedropper Tool.svg" }, { name: "Magic Wand Tool", img: "image/Tools/Magic Wand Tool.svg" } ], correctIndex: 0 },
+            { image: "case/case5.svg", question: "หากต้องการพิมพ์ข้อความตัวอักษรให้เรียงจากบนลงล่าง (รูปแบบแนวตั้ง) ควรใช้เครื่องมือใด?", choices: [ { name: "Horizontal Type Tool", img: "image/Tools/Horizontal Type Too.svg" }, { name: "Vertical Type Tool", img: "image/Tools/vertical type tool.svg" }, { name: "Horizontal Type Mask", img: "image/Tools/horizontal type mask tool.svg" }, { name: "Vertical Type Mask", img: "image/Tools/vertical type mask tool.svg" } ], correctIndex: 1 },
+            { image: "case/case6.svg", question: "หากต้องการปรับเปลี่ยนสี (เปลี่ยนเฉดสี) ของเสื้อผ้าในภาพอย่างรวดเร็ว ควรใช้คำสั่งใด?", choices: [ { name: "Levels", img: "" }, { name: "Color Balance", img: "" }, { name: "Brightness/Contrast", img: "" }, { name: "Hue/Saturation", img: "" } ], correctIndex: 3 },
+            { image: "case/case7.svg", question: "หากต้องการสร้างผลงานให้ได้เหมือนภาพ ควรเตรียมเลเยอร์ใดเป็นลำดับแรก", choices: [ { name: "รูปภาพอยู่ด้านบน ข้อความอยู่ด้านล่าง", img: "" }, { name: "ข้อความอยู่ด้านบน รูปภาพอยู่ด้านล่าง", img: "" }, { name: "รวมเลเยอร์ทั้งหมดก่อน", img: "" }, { name: "เปลี่ยนข้อความเป็น Shape ก่อน", img: "" } ], correctIndex: 0 },
+            { image: "case/case8.svg", question: "หากต้องการทำให้ข้อความโค้งขึ้นเหมือนในภาพ ควรใช้คำสั่งใดใน Photoshop", choices: [ { name: "Create Warped Text", img: "" }, { name: "Convert to Paragraph Text", img: "" }, { name: "Rasterize Type", img: "" }, { name: "Convert to Shape", img: "" } ], correctIndex: 0 },
+            { image: "case/case9.svg", question: "จากภาพเป็นการใช้คำสั่ง Transform รูปแบบใด", choices: [ { name: "Scale", img: "" }, { name: "Rotate", img: "" }, { name: "Skew", img: "" }, { name: "Distort", img: "" } ], correctIndex: 3 },
+            { image: "case/case10.svg", question: "จากภาพ หากต้องการเปลี่ยนรูปภาพบนแก้วกาแฟ โดยให้มุมมองและความโค้งของแก้วยังคงเดิม ควรแก้ไขส่วนใด", choices: [ { name: "Layer Mask", img: "" }, { name: "Smart Object", img: "" }, { name: "Adjustment Layer", img: "" }, { name: "Clipping Mask", img: "" } ], correctIndex: 1 }
+        ];
+
+        let quizData = [...initialQuizData];
+        function shuffleQuestions() {
+            for (let i = quizData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [quizData[i], quizData[j]] = [quizData[j], quizData[i]];
+            }
+        }
+        
+        shuffleQuestions();
+
+        let currentQuestionIndex = 0;
+        let score = 0; 
+        let userAnswers = []; 
+        
+        const maxTime = 20; 
+        let timeLeft = maxTime; 
+        let timerId = null;
+        let isGameStarted = false;
+
+        const rulesModalOverlay = document.getElementById('rules-modal-overlay');
+        const alertModalOverlay = document.getElementById('alert-modal-overlay');
+        const modalContentBox = document.getElementById('modal-content-box');
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        const countdownNumber = document.getElementById('countdown-number');
+        const cdQuestionNum = document.getElementById('cd-question-num');
+        const timerDisplay = document.getElementById('timer-display');
+        const timerBarFill = document.getElementById('timer-bar-fill'); 
+        const choicesContainer = document.getElementById('choices-container');
+        const qImage = document.getElementById('question-image');
+        const qText = document.getElementById('question-text');
+        const progressDots = document.querySelectorAll('.progress-dot');
+
+        function startFromRules() {
+            rulesModalOverlay.style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            startCountdown();
+        }
+
+        function startCountdown() {
+            cdQuestionNum.innerText = currentQuestionIndex + 1;
+            countdownOverlay.style.display = 'flex';
+            
+            let count = 3;
+            countdownNumber.innerText = count;
+            countdownNumber.classList.remove('animate-pop');
+            void countdownNumber.offsetWidth; 
+            countdownNumber.classList.add('animate-pop');
+
+            let cdInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownNumber.innerText = count;
+                    countdownNumber.classList.remove('animate-pop');
+                    void countdownNumber.offsetWidth;
+                    countdownNumber.classList.add('animate-pop');
+                } else if (count === 0) {
+                    countdownNumber.innerText = "ลุยเลย!";
+                    countdownNumber.classList.remove('animate-pop');
+                    void countdownNumber.offsetWidth;
+                    countdownNumber.classList.add('animate-pop');
+                } else {
+                    clearInterval(cdInterval);
+                    countdownOverlay.style.display = 'none';
+                    loadQuestion();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            isGameStarted = true;
+            timeLeft = maxTime;
+            timerDisplay.innerText = timeLeft;
+            timerBarFill.style.width = '100%';
+            timerBarFill.classList.remove('danger');
+
+            startBGM(); // เปิดเพลงตื่นเต้นเมื่อเริ่มโจทย์
+
+            progressDots.forEach((dot, idx) => {
+                if (idx === currentQuestionIndex) {
+                    dot.className = 'progress-dot active';
+                } else if (idx < currentQuestionIndex) {
+                    dot.className = 'progress-dot completed';
+                } else {
+                    dot.className = 'progress-dot';
+                }
+            });
+
+            const qData = quizData[currentQuestionIndex];
+            qText.innerText = qData.question;
+            qImage.src = qData.image;
+            qImage.style.display = "block";
+
+            // สุ่มสลับตัวเลือกคำตอบเพื่อกันแอบดู
+            let choiceIndices = [0, 1, 2, 3];
+            for (let i = choiceIndices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [choiceIndices[i], choiceIndices[j]] = [choiceIndices[j], choiceIndices[i]];
+            }
+
+            choicesContainer.innerHTML = '';
+            choiceIndices.forEach((originalIndex, layoutIndex) => {
+                const choice = qData.choices[originalIndex];
+                const btn = document.createElement('button');
+                btn.className = `choice-btn color-${layoutIndex}`; // ล็อกสีตามตำแหน่งบนกระดานให้สวยงาม
+                
+                let fontSize = '20px';
+                if (choice.img === "") {
+                    if (choice.name.length > 30) {
+                        fontSize = '16px'; 
+                    } else if (choice.name.length > 15) {
+                        fontSize = '18px'; 
+                    } else {
+                        fontSize = '22px'; 
+                    }
+                }
+
+                let imgTag = (choice.img !== "") ? `<img src="${choice.img}" alt="${choice.name}" onerror="this.style.display='none'">` : '';
+
+                btn.innerHTML = `${imgTag}<div class="tool-name" style="font-size: ${fontSize};">${choice.name}</div>`;
+                
+                btn.onclick = () => handleAnswer(btn, originalIndex);
+                choicesContainer.appendChild(btn);
+            });
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = timeLeft;
+                let percentage = (timeLeft / maxTime) * 100;
+                timerBarFill.style.width = percentage + '%';
+
+                if (timeLeft <= 5) {
+                    timerBarFill.classList.add('danger');
+                    if (timeLeft > 0) playTickSound(); // เล่นเสียงเตือนเมื่อเวลาเหลือน้อยกว่าหรือเท่ากับ 5 วิ
+                }
+
+                if(timeLeft <= 0) {
+                    clearInterval(timerId);
+                    isGameStarted = false;
+                    
+                    stopBGM(); // หยุดเพลงเมื่อหมดเวลา
+                    playLockSound(); // เล่นเสียงล็อก/บันทึก
+
+                    document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
+                    userAnswers.push({ qIndex: currentQuestionIndex, selected: -1, isCorrect: false, timeTaken: maxTime });
+                    showTimeoutAlert();
+                }
+            }, 1000);
+        }
+
+        function handleAnswer(buttonElement, selectedIndex) {
+            if (!isGameStarted) return;
+            isGameStarted = false; 
+            clearInterval(timerId); 
+            
+            stopBGM(); // หยุดเพลงตื่นเต้นทันที
+            playLockSound(); // เล่นเสียงล็อกคำตอบ
+            
+            document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
+
+            const qData = quizData[currentQuestionIndex];
+            const isCorrect = (selectedIndex === qData.correctIndex);
+            const timeTaken = maxTime - timeLeft; 
+
+            userAnswers.push({ qIndex: currentQuestionIndex, selected: selectedIndex, isCorrect: isCorrect, timeTaken: timeTaken });
+            if (isCorrect) score++;
+
+            buttonElement.style.background = "linear-gradient(145deg, #0078d7, #005bb5)";
+            buttonElement.style.borderColor = "#00ffff";
+            buttonElement.style.boxShadow = "0 0 20px rgba(0, 255, 255, 0.8)";
+            buttonElement.style.transform = "scale(1.05)";
+
+            setTimeout(() => { showNextAlert(); }, 600);
+        }
+
+        function showNextAlert() {
+            modalContentBox.innerHTML = `
+                <h1 style="margin: 0 0 10px 0; font-size: 28px; color: #00ffff;">✅ บันทึกคำตอบแล้ว</h1>
+                <p style="font-size: 18px; color: #fff; margin-bottom: 20px;">ไปข้อต่อไปกันเลย!</p>
+                <button class="btn-modal" onclick="nextQuestion()">ข้อถัดไป ➔</button>
+            `;
+            alertModalOverlay.style.display = 'flex';
+        }
+
+        function showTimeoutAlert() {
+            modalContentBox.innerHTML = `
+                <h1 style="margin: 0 0 10px 0; font-size: 28px; color: #ff4500;">⏰ หมดเวลา!</h1>
+                <p style="font-size: 18px; color: #fff; margin-bottom: 20px;">คุณใช้เวลาวิเคราะห์นานเกินไป ข้อนี้จึงไม่ได้คะแนน</p>
+                <button class="btn-modal" style="background:#ff4500;" onclick="nextQuestion()">ข้อถัดไป ➔</button>
+            `;
+            alertModalOverlay.style.display = 'flex';
+        }
+
+        function nextQuestion() {
+            alertModalOverlay.style.display = 'none';
+            if (currentQuestionIndex === quizData.length - 1) {
+                showDashboard(); 
+            } else {
+                currentQuestionIndex++;
+                startCountdown(); 
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('game-board-wrapper').style.display = 'none';
+            document.getElementById('top-bar-section').style.display = 'none'; 
+
+            const dashboardWrapper = document.getElementById('dashboard-wrapper');
+            dashboardWrapper.style.display = 'flex';
+            document.getElementById('summary-dashboard').style.display = 'flex';
+
+            const total = quizData.length;
+            const passThreshold = 7; // เกณฑ์ผ่านด่าน 7/10
+            const isPassed = score >= passThreshold;
+            
+            // --- ระบบจัดการประวัติ (LocalStorage) ---
+            let attempts = JSON.parse(localStorage.getItem('stage3_attempts') || '[]');
+            attempts.push(score);
+            localStorage.setItem('stage3_attempts', JSON.stringify(attempts));
+            
+            const headerStatus = document.getElementById('header-status');
+            const complimentEl = document.getElementById('dashboard-compliment');
+            const historyBox = document.getElementById('attempt-history-box');
+            const attemptList = document.getElementById('attempt-list');
+            const historyTitle = document.getElementById('history-title');
+            const actionsContainer = document.getElementById('dashboard-actions');
+            
+            actionsContainer.innerHTML = '';
+
+            let totalTime = 0, fastestTime = maxTime, correctCount = 0, wrongCount = 0, timeoutCount = 0;
+            userAnswers.forEach(ans => {
+                totalTime += ans.timeTaken;
+                if (ans.selected === -1) timeoutCount++;
+                else if (ans.isCorrect) {
+                    correctCount++;
+                    if (ans.timeTaken < fastestTime) fastestTime = ans.timeTaken;
+                } else wrongCount++;
+            });
+
+            // บันทึกคะแนนและเวลาลง localStorage เมื่อจบเกม
+            localStorage.setItem("stage3_score", score.toString());
+            localStorage.setItem("elapsed_time", totalTime.toString());
+            
+            let stage1Score = parseInt(localStorage.getItem("stage1_score")) || 0;
+            let stage2Score = parseInt(localStorage.getItem("stage2_score")) || 0;
+            let stage3Score = score;
+            let stage4Score = parseInt(localStorage.getItem("stage4_score")) || 0;
+            localStorage.setItem("total_score", (stage1Score + stage2Score + stage3Score + stage4Score).toString());
+
+            if (isPassed) {
+                headerStatus.innerText = "✨ ภารกิจสำเร็จ ✨";
+                headerStatus.style.color = "#00ffff";
+                headerStatus.style.textShadow = "0 0 10px rgba(0, 255, 255, 0.5)";
+                
+                if (score === total) complimentEl.innerText = "🏆 สมบูรณ์แบบ! คุณคือยอดฝีมือขั้นสูง!";
+                else complimentEl.innerText = "🔥 ยอดเยี่ยมมาก! ทักษะของคุณเฉียบคมสุดๆ";
+                complimentEl.style.color = "#ffeb3b";
+
+                const ansBtn = document.createElement('button');
+                ansBtn.className = "btn-view-answers";
+                ansBtn.innerText = "🔍 ดูเฉลยคำตอบ";
+                ansBtn.onclick = viewAnswers;
+                actionsContainer.appendChild(ansBtn);
+
+                const unlockBtn = document.createElement('button');
+                unlockBtn.className = "btn-unlock";
+                unlockBtn.innerText = "ปลดล็อคด่านที่ 4 ➔";
+                unlockBtn.onclick = function() { 
+                    localStorage.setItem("stage3_passed", "true");
+                    window.location.href = 'levels.html'; 
+                };
+                actionsContainer.appendChild(unlockBtn);
+
+                if (attempts.length > 1) {
+                    historyBox.style.display = 'block';
+                    historyTitle.innerText = `📊 สำเร็จแล้ว! คุณพยายามมาทั้งหมด ${attempts.length} ครั้ง`;
+                    let historyHtml = ``;
+                    attempts.forEach((s, idx) => { historyHtml += `<span>รอบที่ ${idx + 1}: [${s}/10]</span>`; });
+                    attemptList.innerHTML = historyHtml;
+                } else {
+                    historyBox.style.display = 'none'; 
+                }
+                
+                // นำคำสั่งลบประวัติออก เพื่อให้หน้า Summary นำไปแสดงผลได้
+                // localStorage.removeItem('stage3_attempts'); 
+
+            } else {
+                headerStatus.innerText = "💥 ยังไม่ผ่านเกณฑ์ 💥";
+                headerStatus.style.color = "#ff4500";
+                headerStatus.style.textShadow = "0 0 10px rgba(255, 69, 0, 0.5)";
+                complimentEl.innerText = "ต้องได้คะแนน 7/10 ขึ้นไป เพื่อปลดล็อคด่านถัดไป";
+                complimentEl.style.color = "#ff4500";
+
+                const retryBtn = document.createElement('button');
+                retryBtn.className = "btn-unlock";
+                retryBtn.style.background = "linear-gradient(135deg, #ff4500, #cc3700)";
+                retryBtn.style.borderColor = "#ffaa00";
+                retryBtn.innerText = "🔄 ลองเล่นใหม่อีกครั้ง";
+                retryBtn.onclick = function() { location.reload(); };
+                actionsContainer.appendChild(retryBtn);
+
+                historyBox.style.display = 'block';
+                historyTitle.innerText = `📊 สถิติคะแนนในรอบที่ผ่านมา (เป้าหมาย: 7 คะแนน)`;
+                let historyHtml = ``;
+                attempts.forEach((s, idx) => { historyHtml += `<span>รอบที่ ${idx + 1}: [${s}/10]</span>`; });
+                attemptList.innerHTML = historyHtml;
+            }
+
+            document.getElementById('dashboard-score').innerText = `${score}/${total}`;
+            let accuracy = Math.round((score / total) * 100);
+            
+            setTimeout(() => {
+                document.getElementById('wow-score-ring').style.background = `conic-gradient(#00ffff 0% ${accuracy}%, #333 ${accuracy}% 100%)`;
+            }, 300);
+            
+            let avgTime = (totalTime / total).toFixed(1);
+            if(correctCount === 0) fastestTime = 0; 
+
+            document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+            document.getElementById('stat-avg-time').innerText = `${avgTime} วิ`;
+            document.getElementById('stat-fastest-time').innerText = `${fastestTime} วิ`;
+
+            let correctPct = (correctCount / total) * 100;
+            let wrongPct = (wrongCount / total) * 100;
+            setTimeout(() => {
+                document.getElementById('pie-chart').style.background = `conic-gradient(
+                    #32CD32 0% ${correctPct}%, 
+                    #ff4500 ${correctPct}% ${correctPct + wrongPct}%, 
+                    #666 ${correctPct + wrongPct}% 100%
+                )`;
+            }, 300);
+            
+            document.getElementById('lg-correct').innerText = `${correctCount} ข้อ`;
+            document.getElementById('lg-wrong').innerText = `${wrongCount} ข้อ`;
+            document.getElementById('lg-timeout').innerText = `${timeoutCount} ข้อ`;
+
+            let chartHtml = ``;
+            userAnswers.forEach((ans, idx) => {
+                let time = ans.timeTaken;
+                let percent = (time / maxTime) * 100;
+                let barColor = ans.isCorrect ? 'linear-gradient(0deg, #228B22, #32CD32)' : 'linear-gradient(0deg, #cc3700, #ff4500)';
+                if(ans.selected === -1) barColor = '#666'; 
+
+                chartHtml += `
+                <div class="v-bar-col">
+                    <div class="v-bar-time">${time}s</div>
+                    <div class="v-bar-bg"><div class="v-bar-fill" style="background: ${barColor};" data-target-height="${percent}%"></div></div>
+                    <div class="v-bar-label">Q${idx + 1}</div>
+                </div>`;
+            });
+            document.getElementById('v-chart-content').innerHTML = chartHtml;
+            
+            setTimeout(() => {
+                document.querySelectorAll('.v-bar-fill').forEach(bar => { bar.style.height = bar.getAttribute('data-target-height'); });
+            }, 500);
+
+            buildAnswerKey();
+        }
+
+        function buildAnswerKey() {
+            let html = ``;
+            quizData.forEach((q, idx) => {
+                const uAns = userAnswers.find(u => u.qIndex === idx);
+                const correctChoice = q.choices[q.correctIndex];
+                const isCorrect = uAns && uAns.isCorrect;
+                const icon = isCorrect ? '✅' : '❌';
+                const color = isCorrect ? '#32CD32' : '#ff4500';
+                
+                let userText = (uAns && uAns.selected !== -1) ? q.choices[uAns.selected].name : "หมดเวลา (ไม่ได้ตอบ)";
+
+                html += `
+                <div class="expl-item" style="border-left-color: ${color};">
+                    <img src="${q.image}" alt="Question Image">
+                    <div class="expl-details">
+                        <h4>ข้อ ${idx + 1}: ${q.question}</h4>
+                        <div class="correct-ans">🎯 เฉลยที่ถูกต้อง: ${correctChoice.name}</div>
+                        <div class="user-ans" style="color: ${color};">📝 คุณตอบ: ${userText} ${icon}</div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('expl-list').innerHTML = html;
+        }
+
+        function viewAnswers() { document.getElementById('answers-modal').style.display = 'flex'; }
+        function closeAnswers() { document.getElementById('answers-modal').style.display = 'none'; }
+    </script>
+</body>
+</html>

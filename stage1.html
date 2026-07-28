@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 1 - Photoshop Skill Quest</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* บังคับหน้าเว็บให้พอดีจอ 100% และห้ามมี Scrollbar เลื่อนขึ้นลงเด็ดขาด */
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('image/bg-game.svg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Anuphan', sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        /* ==========================================
+           UI ด้านบน (Top Bar) 
+        ========================================== */
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 40px 0 40px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .level-badge-wrapper {
+            position: relative;
+            padding: 2px;
+            border-radius: 35px;
+            overflow: hidden;
+            display: flex;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .level-badge-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, #00ffff, #31a8ff);
+            animation: spinGlow 4s linear infinite;
+        }
+
+        .level-badge {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 5px 25px 5px 8px;
+            border-radius: 33px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .level-badge .number {
+            background: linear-gradient(135deg, #00ffff, #31a8ff);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #111;
+            box-shadow: 0 0 10px rgba(49, 168, 255, 0.5);
+        }
+
+        .level-badge .info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .level-badge .name { font-size: 16px; font-weight: bold; color: #ffffff; }
+        .level-badge .sub { font-size: 12px; color: #00ffff; }
+
+        .player-profile {
+            background: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(49, 168, 255, 0.4);
+            padding: 5px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-profile .avatar {
+            background: linear-gradient(135deg, #31a8ff, #00ffff);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(49, 168, 255, 0.5);
+        }
+
+        .player-profile .info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .player-profile .name { font-size: 15px; font-weight: bold; color: #ffffff; }
+        .player-profile .room { font-size: 12px; color: #00ffff; }
+
+        /* ==========================================
+           1. คำชี้แจงแถบสีขาว
+        ========================================== */
+        .instruction-box {
+            background-color: #ffffff;
+            color: #111111;
+            padding: 8px 30px;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: -15px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 2px solid #31a8ff;
+        }
+
+        /* ==========================================
+           2. หลอดเส้นเวลาตรงกลาง
+        ========================================== */
+        .timer-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(49, 168, 255, 0.5);
+            padding: 8px 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px; 
+        }
+
+        .timer-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            width: 45px; 
+            text-align: right;
+        }
+
+        .timer-bar-bg {
+            width: 500px; 
+            height: 16px; 
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .timer-bar-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #31a8ff); 
+            border-radius: 10px;
+            transition: width 1s linear, background 0.3s ease; 
+        }
+
+        .timer-bar-fill.danger {
+            background: linear-gradient(90deg, #ff4500, #dc143c);
+            box-shadow: 0 0 10px #ff4500; 
+        }
+
+        /* ==========================================
+           3. โครงสร้าง Layout หลัก (เกมซ้าย-ขวา)
+        ========================================== */
+        .game-board {
+            display: flex;
+            gap: 30px; 
+            width: 95%;
+            max-width: 1500px;
+            flex: 1; 
+            margin-bottom: 25px; 
+            min-height: 0; 
+        }
+
+        .zone-block {
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(49, 168, 255, 0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+            padding: 20px 30px;
+            box-sizing: border-box;
+            height: 100%; 
+            overflow-y: auto; 
+        }
+
+        .zone-block::-webkit-scrollbar { width: 8px; }
+        .zone-block::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .zone-block::-webkit-scrollbar-thumb { background: #31a8ff; border-radius: 10px; }
+
+        .targets-wrapper {
+            position: relative;
+            flex-grow: 1;
+            border-radius: 26px;
+            padding: 3px; 
+            overflow: hidden;
+            display: flex;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+        }
+
+        .targets-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, #00ffff, #31a8ff);
+            animation: spinGlow 4s linear infinite;
+        }
+
+        @keyframes spinGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .targets-panel {
+            flex-grow: 1;
+            background: rgba(20, 20, 20, 0.95); 
+            border-radius: 23px;
+            padding: 20px 30px;
+            box-sizing: border-box;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .targets-pool {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(6, 1fr); 
+            column-gap: 30px;
+            row-gap: 10px; 
+            height: 100%;
+        }
+
+        .target-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            height: 100%; 
+            max-height: 90px; 
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .target-row:hover {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: rgba(49, 168, 255, 0.3);
+        }
+
+        .drop-zone {
+            width: 75px;  
+            height: 75px;
+            max-width: 10vh;
+            max-height: 10vh;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed #777;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #31a8ff;
+            background: rgba(49, 168, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        .target-name {
+            font-size: 17px; 
+            font-weight: bold;
+            color: #fff;
+            width: 100%;
+        }
+
+        .target-name span {
+            display: block;
+            font-size: 13.5px;
+            color: #00ffff;
+            margin-top: 4px;
+            font-weight: normal;
+        }
+
+        .drop-zone .tool-item {
+            box-shadow: none;
+            border-color: transparent;
+            background: transparent;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .tools-panel {
+            width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tools-pool {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: repeat(6, 1fr);    
+            gap: 15px; 
+            height: 100%;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .tool-item {
+            width: 85px;  
+            height: 85px;
+            max-width: 12vh; 
+            max-height: 12vh;
+            background: #2a2a2a;
+            border: 2px solid #555;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            transition: all 0.2s;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 5;
+        }
+
+        .tool-item img {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+            pointer-events: none; 
+        }
+
+        .tool-item:active {
+            cursor: grabbing;
+            transform: scale(1.15);
+            border-color: #31a8ff;
+            z-index: 15;
+        }
+
+        /* ==========================================
+           Custom Modal System (อเลิทกติกา และแจ้งเตือนเกม)
+        ========================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* --- หน้าต่างกติกาเด้งก่อนเริ่มเกม --- */
+        .rules-box {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .blink-alert-text {
+            color: #ffea00;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(255, 234, 0, 0.8);
+            animation: textBlink 1s infinite;
+        }
+
+        /* กรอบไฟไหลรอบกติกา */
+        .rules-img-wrapper {
+            position: relative;
+            padding: 5px; /* ความหนาของเส้นไฟวิ่ง */
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            box-shadow: 0 0 35px rgba(255, 80, 0, 0.6);
+            animation: pulseFireBox 2s infinite;
+        }
+
+        .rules-img-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, #ff3300, #ffcc00, transparent);
+            animation: spinGlow 2.5s linear infinite;
+        }
+
+        .rules-img {
+            position: relative;
+            z-index: 1;
+            max-width: 90vw;
+            max-height: 70vh;
+            width: auto;
+            border-radius: 20px;
+            background: rgba(20, 20, 20, 0.9); 
+        }
+
+        /* ปุ่มสีเขียว */
+        .btn-start-game {
+            margin-top: -25px; 
+            z-index: 10;
+            font-family: 'Anuphan', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 15px 70px;
+            background: linear-gradient(90deg, #00ff73, #00b33c); /* ไล่สีเขียว */
+            color: #fff;
+            border: 2px solid #00ff73;
+            border-radius: 50px;
+            cursor: pointer;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            box-shadow: 0 0 25px rgba(0, 255, 115, 0.7);
+            animation: pulseGreen 1.2s infinite;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .btn-start-game:active {
+            transform: scale(0.95);
+        }
+
+        .btn-start-game:hover {
+            background: linear-gradient(90deg, #33ff99, #00cc44);
+        }
+
+        /* --- หน้าต่างแจ้งเตือนระหว่างเกม (Alert Box) --- */
+        .modal-box {
+            background: linear-gradient(145deg, #1e2a38, #111822);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #31a8ff;
+            box-shadow: 0 0 40px rgba(49, 168, 255, 0.4);
+            text-align: center;
+            max-width: 400px;
+            color: white;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-box h1 { margin: 0 0 15px 0; font-size: 32px; color: #00ffff; }
+        .modal-box p { font-size: 18px; color: #ccc; margin-bottom: 30px; }
+
+        .btn-modal {
+            background-color: #31a8ff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Anuphan', sans-serif;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(49, 168, 255, 0.4);
+        }
+
+        .btn-modal:hover { background-color: #0078d7; transform: scale(1.05); }
+
+        .btn-timeout {
+            background-color: #ff4500;
+            border-color: #ff4500;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
+        }
+        .btn-timeout:hover { background-color: #cc3700; }
+
+        /* อนิเมชั่นต่างๆ */
+        @keyframes dropIn {
+            0% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes textBlink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.98); }
+        }
+
+        @keyframes pulseFireBox {
+            0% { box-shadow: 0 0 25px rgba(255, 80, 0, 0.6); }
+            50% { box-shadow: 0 0 45px rgba(255, 150, 0, 0.9); }
+            100% { box-shadow: 0 0 25px rgba(255, 80, 0, 0.6); }
+        }
+
+        @keyframes pulseGreen {
+            0% { box-shadow: 0 0 20px rgba(0, 255, 115, 0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 115, 1); transform: scale(1.05); }
+            100% { box-shadow: 0 0 20px rgba(0, 255, 115, 0.6); transform: scale(1); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modal กติกาที่จะเด้งขึ้นมาก่อนเริ่มเกมด่าน 1 -->
+    <div id="rules-modal-overlay" class="modal-overlay">
+        <div class="rules-box">
+            <div class="blink-alert-text">⚠️ โปรดอ่านกติกาก่อนเริ่มเกม ⚠️</div>
+            <div class="rules-img-wrapper">
+                <img src="image/rules-st1.svg" alt="Rules Stage 1" class="rules-img">
+            </div>
+            <button class="btn-start-game" onclick="startFromRules()">เริ่มเกม</button>
+        </div>
+    </div>
+
+    <!-- Modal แจ้งเตือนสถานะต่างๆ (ตั้งค่าซ่อนไว้ก่อน) -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <h1 id="modal-title"></h1>
+            <p id="modal-text"></p>
+            <button id="modal-btn" class="btn-modal"></button>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        
+        <div class="level-badge-wrapper">
+            <div class="level-badge">
+                <div class="number">1</div>
+                <div class="info">
+                    <span class="name">Tool Matching</span>
+                    <span class="sub">Level 1</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="player-profile">
+            <div class="avatar">🎮</div>
+            <div class="info">
+                <span class="name" id="display_name">ผู้เล่น</span>
+                <span class="room" id="display_room"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="instruction-box">ลากไอคอนเครื่องมือ Photoshop จากด้านขวาไปวางในช่องด้านซ้ายให้ตรงกับชื่อเครื่องมือที่กำหนด</div>
+
+    <div class="timer-container">
+        <div class="timer-text" id="timer-display">100</div>
+        <div class="timer-bar-bg">
+            <div class="timer-bar-fill" id="timer-bar-fill"></div>
+        </div>
+    </div>
+
+    <div class="game-board">
+        
+        <div class="targets-wrapper">
+            <div class="targets-panel">
+                <div class="targets-pool" id="targets-pool">
+                    <div class="target-row"><div class="drop-zone" data-target="crop"></div><div class="target-name">Crop Tool <span>(ตัดภาพ)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="elliptical"></div><div class="target-name">Elliptical Marquee Tool <span>(เลือกพื้นที่วงกลม/วงรี)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="eyedropper"></div><div class="target-name">Eyedropper Tool <span>(ดูดสี)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="type"></div><div class="target-name">Horizontal Type Tool <span>(พิมพ์ข้อความแนวนอน)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="lasso"></div><div class="target-name">Lasso Tool <span>(เลือกพื้นที่อิสระ)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="magicwand"></div><div class="target-name">Magic Wand Tool <span>(เลือกพื้นที่สีเดียวกัน)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="move"></div><div class="target-name">Move Tool <span>(เคลื่อนย้ายวัตถุ)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="polygonal"></div><div class="target-name">Polygonal Lasso Tool <span>(เลือกพื้นที่แบบเส้นตรง)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="quickselection"></div><div class="target-name">Quick Selection Tool <span>(เลือกพื้นที่อย่างรวดเร็ว)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="rectangular"></div><div class="target-name">Rectangular Marquee Tool <span>(เลือกพื้นที่สี่เหลี่ยม)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="spothealing"></div><div class="target-name">Spot Healing Brush Tool <span>(ลบจุด/ซ่อมแซมภาพ)</span></div></div>
+                    <div class="target-row"><div class="drop-zone" data-target="zoom"></div><div class="target-name">Zoom Tool <span>(ย่อ/ขยายมุมมอง)</span></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="zone-block tools-panel">
+            <div class="tools-pool" id="tools-pool">
+                <div class="tool-item" draggable="true" data-id="crop"><img src="image/Tools/Crop%20Tool.svg" alt="Crop Tool"></div>
+                <div class="tool-item" draggable="true" data-id="elliptical"><img src="image/Tools/Elliptical%20Marquee%20Tool.svg" alt="Elliptical Marquee"></div>
+                <div class="tool-item" draggable="true" data-id="eyedropper"><img src="image/Tools/Eyedropper%20Tool.svg" alt="Eyedropper Tool"></div>
+                <div class="tool-item" draggable="true" data-id="type"><img src="image/Tools/Horizontal%20Type%20Too.svg" alt="Horizontal Type Tool"></div>
+                <div class="tool-item" draggable="true" data-id="lasso"><img src="image/Tools/Lasso%20Tool.svg" alt="Lasso Tool"></div>
+                <div class="tool-item" draggable="true" data-id="magicwand"><img src="image/Tools/Magic%20Wand%20Tool.svg" alt="Magic Wand Tool"></div>
+                <div class="tool-item" draggable="true" data-id="move"><img src="image/Tools/Move%20Tool.svg" alt="Move Tool"></div>
+                <div class="tool-item" draggable="true" data-id="polygonal"><img src="image/Tools/polygonal%20lasso%20tool.svg" alt="Polygonal Lasso Tool"></div>
+                <div class="tool-item" draggable="true" data-id="quickselection"><img src="image/Tools/Quick%20Selection%20Tool.svg" alt="Quick Selection Tool"></div>
+                <div class="tool-item" draggable="true" data-id="rectangular"><img src="image/Tools/Rectangular%20Marquee%20Tool.svg" alt="Rectangular Marquee"></div>
+                <div class="tool-item" draggable="true" data-id="spothealing"><img src="image/Tools/Spot%20Healing%20Brush%20Tool.svg" alt="Spot Healing Brush"></div>
+                <div class="tool-item" draggable="true" data-id="zoom"><img src="image/Tools/Zoom%20Tool.svg" alt="Zoom Tool"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================================
+        // Load Player Data
+        // ==========================================
+        document.addEventListener("DOMContentLoaded", function() {
+            const playerName = localStorage.getItem("player_name");
+            if (!playerName) {
+                window.location.href = "login.html";
+                return;
+            }
+            document.getElementById("display_name").textContent = playerName;
+            
+            const roomText = localStorage.getItem("room_text");
+            if (roomText) {
+                document.getElementById("display_room").textContent = roomText;
+            }
+        });
+
+        // ==========================================
+        // Audio System (ตื่นเต้น + วางรูป + แจ้งเตือนเวลา)
+        // ==========================================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let bgmInterval = null;
+        const actionNotes = [130.81, 146.83, 130.81, 164.81]; // C3, D3, C3, E3 (จังหวะแอคชั่น)
+        let noteIdx = 0;
+
+        function startBGM() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            stopBGM(); 
+            bgmInterval = setInterval(() => {
+                if (audioCtx.state === 'suspended') return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth'; // เสียงเลื่อยสร้างความตื่นเต้น
+                osc.frequency.setValueAtTime(actionNotes[noteIdx % actionNotes.length], audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+                noteIdx++;
+            }, 250); // จังหวะเร็ว 250ms ให้เข้ากับเวลาจำกัด
+        }
+
+        function stopBGM() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        function playTickSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // เพิ่มฟังก์ชันเสียงตอนวางรูป (Drop Sound - เสียง Pop)
+        function playDropSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine'; // เสียงนุ่มๆ แบบ Pop
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        const tools = document.querySelectorAll('.tool-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+        const toolsPool = document.getElementById('tools-pool');
+        const targetsPool = document.getElementById('targets-pool');
+        
+        const rulesModalOverlay = document.getElementById('rules-modal-overlay');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        const modalBtn = document.getElementById('modal-btn');
+        const timerDisplay = document.getElementById('timer-display');
+        const timerBarFill = document.getElementById('timer-bar-fill'); 
+        
+        const maxScore = 12;
+        const maxTime = 100; 
+        let timeLeft = maxTime; 
+        let timerId = null;
+        let isGameStarted = false;
+        let autoCloseModalTimer = null; 
+
+        // สุ่มเรียงรูปฝั่งขวา (Tools) ก่อนเริ่มเกม
+        for (let i = toolsPool.children.length; i >= 0; i--) {
+            toolsPool.appendChild(toolsPool.children[Math.random() * i | 0]);
+        }
+
+        // สุ่มเรียงป้ายชื่อฝั่งซ้าย (Targets) ก่อนเริ่มเกม เพื่อป้องกันการลอกกัน
+        for (let i = targetsPool.children.length; i >= 0; i--) {
+            targetsPool.appendChild(targetsPool.children[Math.random() * i | 0]);
+        }
+
+        function showModal(title, text, btnText, btnClass, onClickAction) {
+            modalTitle.innerHTML = title;
+            modalText.innerHTML = text;
+            modalBtn.innerHTML = btnText;
+            modalBtn.className = "btn-modal " + btnClass;
+            modalBtn.onclick = onClickAction;
+            modalOverlay.style.display = 'flex';
+        }
+
+        // กดปุ่มปิดหน้าต่างกติกาและเริ่มเกม
+        function startFromRules() {
+            rulesModalOverlay.style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            startGame();
+        }
+
+        // ปรับให้เป็นทั้งฟังก์ชัน "เริ่มเกม" และ "เดินเวลาต่อ" ได้
+        function startGame() {
+            modalOverlay.style.display = 'none';
+            isGameStarted = true;
+            
+            clearInterval(timerId); 
+            startBGM(); // เริ่มบรรเลงเพลงพื้นหลัง
+            
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = timeLeft;
+
+                // คำนวณเปอร์เซ็นต์ความยาวของหลอด
+                let percentage = (timeLeft / maxTime) * 100;
+                timerBarFill.style.width = percentage + '%';
+
+                // เปลี่ยนเป็นสีแดงเมื่อเหลือน้อยกว่าหรือเท่ากับ 20 วินาที
+                if (timeLeft <= 20) {
+                    timerBarFill.classList.add('danger');
+                    if (timeLeft > 0) playTickSound(); // เล่นเสียงเตือนทุกวินาที
+                }
+
+                if(timeLeft <= 0) {
+                    clearInterval(timerId);
+                    isGameStarted = false;
+                    timerBarFill.style.width = '0%'; // หลอดหมด
+                    stopBGM(); // หยุดเพลงเมื่อหมดเวลา
+                    showModal('⏰ หมดเวลา!', 'ลองตั้งสติใหม่แล้วพยายามอีกครั้งนะ', 'เริ่มเล่นใหม่', 'btn-timeout', () => window.location.reload());
+                }
+            }, 1000);
+        }
+
+        let draggedTool = null;
+        tools.forEach(tool => {
+            tool.addEventListener('dragstart', function(e) {
+                if(!isGameStarted) { e.preventDefault(); return; } 
+                draggedTool = this;
+                setTimeout(() => this.style.opacity = '0.5', 0);
+            });
+            tool.addEventListener('dragend', function() {
+                this.style.opacity = '1';
+                draggedTool = null;
+                checkAllPlaced();
+            });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => e.preventDefault());
+            zone.addEventListener('dragenter', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+            zone.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+            zone.addEventListener('drop', function() {
+                this.classList.remove('drag-over');
+                if (!draggedTool || !isGameStarted) return;
+
+                // ถ้ามีรูปเก่าอยู่ เด้งกลับ
+                if (this.children.length > 0) {
+                    const existingTool = this.children[0];
+                    toolsPool.appendChild(existingTool);
+                }
+                
+                this.appendChild(draggedTool);
+                playDropSound(); // เล่นเสียงตอนวางรูปลงช่องสำเร็จ
+            });
+        });
+
+        toolsPool.addEventListener('dragover', e => e.preventDefault());
+        toolsPool.addEventListener('drop', function() {
+            if (!draggedTool || !isGameStarted) return;
+            this.appendChild(draggedTool);
+        });
+
+        function checkAllPlaced() {
+            let placedCount = 0;
+            dropZones.forEach(zone => {
+                if (zone.children.length > 0) placedCount++;
+            });
+
+            if (placedCount === maxScore) {
+                let correctCount = 0;
+                let wrongTools = []; 
+
+                dropZones.forEach(zone => {
+                    const tool = zone.children[0];
+                    if (zone.getAttribute('data-target') === tool.getAttribute('data-id')) {
+                        correctCount++;
+                    } else {
+                        wrongTools.push(tool);
+                    }
+                });
+
+                if (correctCount === maxScore) {
+                    clearInterval(timerId);
+                    isGameStarted = false;
+                    stopBGM(); // หยุดเพลงเมื่อชนะ
+                    setTimeout(() => {
+                        showModal('🎉 ยอดเยี่ยมมาก!', 'ถูกต้องทั้งหมด คุณผ่านด่านที่ 1 แล้ว!', 'ด่านต่อไป', '', () => {
+                            localStorage.setItem("stage1_passed", "true");
+                            localStorage.setItem("stage1_score", maxScore);
+                            
+                            let timeUsed = maxTime - timeLeft;
+                            let currentElapsedTime = parseInt(localStorage.getItem("elapsed_time") || "0");
+                            localStorage.setItem("elapsed_time", currentElapsedTime + timeUsed);
+                            
+                            window.location.href = "levels.html";
+                        });
+                    }, 300);
+                } else {
+                    
+                    // หยุดเวลาและเกมชั่วคราวเมื่อลากผิด
+                    clearInterval(timerId);
+                    isGameStarted = false;
+                    stopBGM(); // หยุดเพลงตอนเด้ง Alert ความผิดพลาด
+
+                    clearTimeout(autoCloseModalTimer); 
+                    
+                    showModal(
+                        '⚠️ ยังไม่ถูกต้อง!', 
+                        'อ๊ะ! ยังมีบางอันไม่ถูกนะ ลองลากแก้ใหม่ดู', 
+                        'กดเล่นต่อ', 
+                        'btn-timeout', 
+                        () => {
+                            clearTimeout(autoCloseModalTimer); 
+                            startGame(); // ซ่อน Modal, เดินเวลาต่อ และบรรเลงเพลงต่อ
+                        }
+                    );
+
+                    // ตั้งเวลาปิดเองใน 5 วินาที
+                    autoCloseModalTimer = setTimeout(() => {
+                        if (modalOverlay.style.display === 'flex') {
+                            startGame(); // หากไม่ได้กดปุ่ม ให้รันเกมและเพลงต่อเลย
+                        }
+                    }, 5000);
+
+                    // ดีดเครื่องมือที่ผิดกลับไปที่คลัง
+                    setTimeout(() => {
+                        wrongTools.forEach(tool => toolsPool.appendChild(tool));
+                    }, 300);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

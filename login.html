@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Photoshop Skill Quest</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_login.css">
+</head>
+<body>
+    <div class="login-box">
+        <h2>เข้าสู่ระบบเพื่อเริ่มภารกิจ</h2>
+        <form id="loginForm">
+            
+            <div class="input-group custom-swanky-wrapper">
+                <label>เลือกห้องเรียน:</label>
+                <input type="checkbox" id="dropdown-toggle" class="hide-cb">
+                <div class="swanky-dropdown">
+                    <label for="dropdown-toggle" class="dropdown-header">
+                        <span id="selected-room-text">-- กรุณาเลือกห้อง --</span>
+                        <div class="lil_arrow"></div>
+                        <div class="bar"></div>
+                    </label>
+                    <ul class="dropdown-list">
+                        <li>
+                            <input type="radio" id="m2_1" name="room" value="m2_1" required 
+                            onclick="selectRoom('m2_1', 'ม.2/1')">
+                            <label for="m2_1">ม.2/1</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="m2_2" name="room" value="m2_2" required 
+                            onclick="selectRoom('m2_2', 'ม.2/2')">
+                            <label for="m2_2">ม.2/2</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="m2_4" name="room" value="m2_4" required 
+                            onclick="selectRoom('m2_4', 'ม.2/4')">
+                            <label for="m2_4">ม.2/4</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="m2_5" name="room" value="m2_5" required 
+                            onclick="selectRoom('m2_5', 'ม.2/5')">
+                            <label for="m2_5">ม.2/5</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="m2_6" name="room" value="m2_6" required 
+                            onclick="selectRoom('m2_6', 'ม.2/6')">
+                            <label for="m2_6">ม.2/6</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="m2_7" name="room" value="m2_7" required 
+                            onclick="selectRoom('m2_7', 'ม.2/7')">
+                            <label for="m2_7">ม.2/7</label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="input-group custom-swanky-wrapper" id="student-group" style="display: none;">
+                <label>เลือกชื่อผู้เล่น:</label>
+                <input type="checkbox" id="student-toggle" class="hide-cb">
+                <div class="swanky-dropdown">
+                    <label for="student-toggle" class="dropdown-header">
+                        <span id="selected-student-text">-- กรุณาเลือกชื่อ --</span>
+                        <div class="lil_arrow"></div>
+                        <div class="bar"></div>
+                    </label>
+                    
+                    <ul class="dropdown-list" id="student-list"></ul>
+                </div>
+                
+                <input type="hidden" name="player_name" id="real_player_name" required>
+            </div>
+            
+            <button type="submit" class="btn-submit">ยืนยัน</button>
+        </form>
+    </div>
+
+    <script src="students.js"></script>
+
+    <script>
+        // รีเซ็ต (ล้างค่า) การผ่านด่านทั้งหมดทุกครั้งที่โหลดหน้า Login
+        localStorage.removeItem("stage1_passed");
+        localStorage.removeItem("stage2_passed");
+        localStorage.removeItem("stage3_passed");
+        localStorage.removeItem("stage4_passed");
+        
+        // เคลียร์คะแนนและเวลาของรอบก่อนหน้า
+        localStorage.removeItem("stage1_score");
+        localStorage.removeItem("stage2_score");
+        localStorage.removeItem("stage3_score");
+        localStorage.removeItem("stage4_score");
+        localStorage.removeItem("total_score");
+        localStorage.removeItem("elapsed_time");
+
+        function selectRoom(roomValue, roomText) {
+            document.getElementById('selected-room-text').innerText = roomText;
+            document.getElementById('dropdown-toggle').checked = false;
+            document.getElementById('student-group').style.display = 'block';
+
+            const studentListUl = document.getElementById('student-list');
+            studentListUl.innerHTML = ''; 
+
+            document.getElementById('selected-student-text').innerText = '-- กรุณาเลือกชื่อ --';
+            document.getElementById('real_player_name').value = '';
+            document.getElementById('student-toggle').checked = false;
+
+            // เก็บข้อความของห้องเพื่อนำไปใช้แสดงผล
+            localStorage.setItem("room_text", roomText);
+
+            if(typeof studentData !== 'undefined' && studentData[roomValue]) {
+                studentData[roomValue].forEach((name, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <input type="radio" id="student_${index}" name="dummy_student" value="${name}"
+                        onclick="selectStudent('${name}')">
+                        <label for="student_${index}">${name}</label>
+                    `;
+                    studentListUl.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.innerHTML = `<label style="text-align:center; color:#ccc;">-- ไม่พบรายชื่อ --</label>`;
+                studentListUl.appendChild(li);
+            }
+        }
+
+        function selectStudent(name) {
+            document.getElementById('selected-student-text').innerText = name;
+            document.getElementById('real_player_name').value = name; 
+            document.getElementById('student-toggle').checked = false; 
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const playerName = document.getElementById('real_player_name').value;
+            let roomValue = '';
+            
+            const roomRadios = document.getElementsByName('room');
+            for (let i = 0; i < roomRadios.length; i++) {
+                if (roomRadios[i].checked) {
+                    roomValue = roomRadios[i].value;
+                    break;
+                }
+            }
+
+            if (playerName !== '' && roomValue !== '') {
+                localStorage.setItem("player_name", playerName);
+                localStorage.setItem("room", roomValue);
+                window.location.href = "rules.html";
+            }
+        });
+    </script>
+</body>
+</html>

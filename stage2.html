@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 2 - Workflow Challenge</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* บังคับหน้าเว็บให้พอดีจอ 100% ปิด Scroll */
+        body {
+            margin: 0; padding: 0;
+            background-image: url('image/bg-game.svg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            font-family: 'Anuphan', sans-serif; color: #fff;
+            display: flex; flex-direction: column; 
+            height: 100vh; overflow: hidden; 
+        }
+
+        /* ==========================================
+           1. UI ด้านบน (Top Bar)
+        ========================================== */
+        .top-bar-container {
+            width: 100%; height: 135px; 
+            position: relative; flex-shrink: 0;
+            z-index: 10; margin-top: 15px;
+        }
+        .left-badges-group { position: absolute; top: 10px; left: 40px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+        .right-profile-group { position: absolute; top: 10px; right: 40px; }
+        
+        .center-group { 
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            gap: 20px; 
+            width: max-content; 
+        }
+        
+        .level-badge-wrapper { position: relative; padding: 2px; border-radius: 35px; overflow: hidden; display: inline-flex; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); }
+        .level-badge-wrapper::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, #00ffff, #31a8ff); animation: spinGlow 4s linear infinite; }
+        .level-badge { background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px); padding: 5px 25px 5px 8px; border-radius: 33px; display: flex; align-items: center; gap: 15px; position: relative; z-index: 1; }
+        .level-badge .number { background: linear-gradient(135deg, #00ffff, #31a8ff); width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; color: #111; box-shadow: 0 0 10px rgba(49, 168, 255, 0.5); }
+        .level-badge .info { display: flex; flex-direction: column; line-height: 1.2; text-align: left; }
+        .level-badge .name { font-size: 16px; font-weight: bold; color: #ffffff; }
+        .level-badge .sub { font-size: 12px; color: #00ffff; }
+        
+        .player-profile { background: rgba(30, 30, 30, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(49, 168, 255, 0.4); padding: 5px 20px; border-radius: 30px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); }
+        .player-profile .avatar { background: linear-gradient(135deg, #31a8ff, #00ffff); width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; color: #111; font-weight:bold;}
+        .player-profile .info { display: flex; flex-direction: column; text-align: left; line-height: 1.2; }
+        .player-profile .name { font-size: 15px; font-weight: bold; color: #ffffff; }
+        .player-profile .room { font-size: 12px; color: #00ffff; }
+        
+        .instruction-box { background-color: #ffffff; color: #111111; padding: 10px 40px; border-radius: 30px; font-size: 16px; font-weight: bold; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); border: 2px solid #31a8ff; margin: 0; text-align: center; width: fit-content; }
+        .timer-container { display: flex; align-items: center; gap: 12px; background: rgba(0, 20, 50, 0.8); backdrop-filter: blur(10px); border: 1px solid #00ffff; padding: 6px 25px; border-radius: 30px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 10px rgba(0, 255, 255, 0.2); width: fit-content; justify-content: center; }
+        .timer-icon { font-size: 20px; color: #00ffff; animation: pulse 1.5s infinite; }
+        .timer-val { font-size: 22px; font-weight: bold; color: #00ffff; text-shadow: 0 0 10px #00ffff; letter-spacing: 2px; }
+
+        /* ==========================================
+           2. โครงสร้างเกมบอร์ด
+        ========================================== */
+        .game-board-wrapper {
+            flex: 1; width: 100%; 
+            display: flex; flex-direction: column; justify-content: center; 
+            align-items: center; 
+            padding-bottom: 20px; box-sizing: border-box; overflow: hidden; gap: 12px;
+        }
+
+        .pipeline-zone {
+            width: 96%; max-width: 1400px; 
+            background: linear-gradient(180deg, rgba(5, 15, 35, 0.95) 0%, rgba(0, 5, 15, 0.98) 100%); 
+            backdrop-filter: blur(15px);
+            border-left: 2px solid rgba(49, 168, 255, 0.3);
+            border-right: 2px solid rgba(49, 168, 255, 0.3);
+            box-shadow: 0 0 40px rgba(0, 100, 255, 0.2), inset 0 0 30px rgba(0, 255, 255, 0.05);
+            padding: 30px 20px 40px 20px; display: flex; flex-direction: column; align-items: center; position: relative;
+            clip-path: polygon(0 15px, 15px 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 15px), calc(100% - 15px) 100%, 15px 100%, 0 calc(100% - 15px));
+        }
+        
+        .pipeline-zone::before { content: ''; position: absolute; top: 0; left: 5%; width: 90%; height: 2px; background: rgba(0, 255, 255, 0.3); }
+        .pipeline-zone::after { content: ''; position: absolute; bottom: 0; left: 5%; width: 90%; height: 2px; background: rgba(0, 255, 255, 0.3); }
+
+        .cyber-line-top { position: absolute; top: -1px; left: -10%; width: 150px; height: 3px; background: #00ffff; box-shadow: 0 0 15px #00ffff, 0 0 30px #ffffff; border-radius: 50%; animation: scanLight 4s ease-in-out infinite; z-index: 5; }
+        .cyber-line-bottom { position: absolute; bottom: -1px; right: -10%; width: 150px; height: 3px; background: #00ffff; box-shadow: 0 0 15px #00ffff, 0 0 30px #ffffff; border-radius: 50%; animation: scanLightReverse 4s ease-in-out infinite; z-index: 5; }
+        
+        .mission-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; } 
+        
+        .mission-image { 
+            height: 85px; 
+            margin-bottom: 15px; object-fit: contain; 
+            mix-blend-mode: screen; 
+            filter: drop-shadow(0 0 15px rgba(0,255,255,0.8)) brightness(1.2); 
+            animation: floatSlow 4s ease-in-out infinite; 
+        }
+        
+        .mission-title { font-size: 26px; color: #fff; font-weight: bold; text-shadow: 0 2px 10px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 15px; margin: 0; }
+        .mission-title span { border: 1px solid #00ffff; color: #00ffff; background: rgba(0, 255, 255, 0.1); padding: 5px 15px; border-radius: 20px; font-size: 18px; font-weight: normal; box-shadow: inset 0 0 10px rgba(0,255,255,0.2); }
+
+        .pipeline-track { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; flex-wrap: nowrap; } 
+
+        .drop-slot {
+            width: 145px; height: 145px; 
+            background: rgba(0, 10, 30, 0.4); 
+            border: 2px dashed rgba(0, 255, 255, 0.3);
+            border-radius: 12px; position: relative; display: flex; justify-content: center; align-items: center;
+            transition: all 0.3s; flex-shrink: 0;
+            animation: pulseSlot 3s infinite alternate; 
+        }
+        .drop-slot::before { content: attr(data-index); position: absolute; font-size: 55px; font-weight: bold; color: rgba(255,255,255,0.06); z-index: 0; }
+        .drop-slot.drag-over { border-color: #00ffff; background: rgba(0, 255, 255, 0.2); transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); animation: none; }
+
+        .separator-text { color: #00ffff; font-size: 18px; margin: 5px 0; text-shadow: 0 0 10px rgba(0, 255, 255, 0.6); display: flex; align-items: center; gap: 10px; animation: pulseText 2s infinite; }
+        .separator-text span { font-weight: bold; letter-spacing: -1px; }
+
+        .pool-zone { width: 96%; max-width: 1400px; background: transparent; border: none; box-shadow: none; padding: 10px; display: flex; justify-content: center; align-items: center; gap: 25px; flex-wrap: wrap; }
+
+        .step-card {
+            width: 145px; height: 145px; 
+            background: linear-gradient(180deg, rgba(0, 40, 100, 0.9), rgba(0, 10, 30, 0.95));
+            border: 2px solid #00ffff; border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: grab; transition: all 0.2s; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(0, 255, 255, 0.2);
+            position: relative; z-index: 5; padding: 15px; box-sizing: border-box; text-align: center;
+        }
+        .step-card:hover { border-color: #ffffff; transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0, 255, 255, 0.6); }
+        .step-card:active { cursor: grabbing; transform: scale(0.95); z-index: 15; }
+        .step-card .step-text { font-size: 16px; font-weight: bold; color: #fff; line-height: 1.3; pointer-events: none; margin-top: 10px;}
+        .step-card .step-icon { font-size: 42px; pointer-events: none; }
+        
+        .drop-slot .step-card { width: 100%; height: 100%; border-color: #00ffff; background: linear-gradient(180deg, rgba(0, 60, 120, 0.9), rgba(0, 20, 50, 0.95)); box-shadow: 0 0 15px rgba(0, 255, 255, 0.5); transform: none; border-radius: 12px;}
+
+        .btn-check-answer {
+            background: linear-gradient(90deg, #ffb700, #ff8c00); border: 2px solid #ffe600;
+            color: #111; font-size: 24px; font-weight: bold; padding: 15px 70px; margin-top: 15px; 
+            box-shadow: 0 0 25px rgba(255, 170, 0, 0.6); cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; gap: 10px; font-family: 'Anuphan', sans-serif;
+            clip-path: polygon(15px 0, 100% 0, calc(100% - 15px) 100%, 0 100%);
+        }
+        .btn-check-answer:hover { transform: scale(1.05); box-shadow: 0 0 35px rgba(255, 170, 0, 0.9); border-color: #fff; color: #000;}
+
+        /* ==========================================
+           3. หน้าต่างแดชบอร์ดสรุปคะแนน
+        ========================================== */
+        .summary-dashboard {
+            display: none; flex-direction: column; align-items: center; 
+            width: 90%; max-width: 900px; height: auto;
+            background: linear-gradient(180deg, rgba(5, 15, 35, 0.95) 0%, rgba(0, 5, 15, 0.98) 100%); 
+            backdrop-filter: blur(15px); 
+            border-left: 2px solid rgba(0, 255, 255, 0.4); border-right: 2px solid rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.2), inset 0 0 30px rgba(0, 255, 255, 0.05); 
+            padding: 40px 50px; box-sizing: border-box; overflow: hidden; margin: auto; position: relative;
+            clip-path: polygon(0 20px, 20px 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0 calc(100% - 20px));
+        }
+        .summary-dashboard::before { content: ''; position: absolute; top: 0; left: 5%; width: 90%; height: 2px; background: rgba(0, 255, 255, 0.3); }
+        .summary-dashboard::after { content: ''; position: absolute; bottom: 0; left: 5%; width: 90%; height: 2px; background: rgba(0, 255, 255, 0.3); }
+
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px dashed rgba(0,255,255,0.3); padding-bottom: 20px; margin-bottom: 30px; }
+        .dashboard-title h1 { color: #ffb700; font-size: 36px; margin: 0; text-shadow: 0 0 15px rgba(255, 183, 0, 0.5); }
+        .dashboard-title p { color: #00ffff; font-size: 20px; font-weight: bold; margin: 5px 0 0 0; }
+        
+        .score-display { display: flex; align-items: center; gap: 20px; }
+        .wow-score-wrapper { position: relative; width: 110px; height: 110px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 30px rgba(50, 205, 50, 0.4); background: #111; border: 2px solid rgba(50, 205, 50, 0.3);}
+        .wow-score-wrapper::before { content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 3px solid transparent; border-top-color: #32CD32; border-bottom-color: #32CD32; animation: spinGlow 3s linear infinite; }
+        
+        .wow-score-inner { display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2; }
+        .wow-score-inner .score-text { font-size: 26px; font-weight: bold; color: #32CD32; text-shadow: 0 0 15px rgba(50, 205, 50, 0.8); line-height: 1; }
+
+        .stats-grid-wow { display: flex; gap: 30px; justify-content: center; width: 100%; margin-bottom: 30px; }
+        
+        .stat-card-wow { 
+            background: linear-gradient(135deg, rgba(0, 40, 100, 0.6), rgba(0, 10, 30, 0.9)); 
+            border: 2px solid rgba(0, 255, 255, 0.4); 
+            border-radius: 15px; padding: 25px 30px; 
+            display: flex; align-items: center; gap: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(0, 255, 255, 0.1);
+            width: 100%; max-width: 400px; position: relative; overflow: hidden;
+        }
+        .stat-card-wow::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0,255,255,0.1), transparent); transform: skewX(-20deg); animation: cardShine 4s infinite; }
+        
+        .wow-icon { width: 75px; height: 75px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(0,255,255,0.6)); mix-blend-mode: screen; }
+        .wow-info { text-align: left; }
+        .wow-info h4 { margin: 0 0 10px 0; color: #ccc; font-size: 16px; }
+        .wow-info .val { font-size: 34px; font-weight: bold; color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.6); }
+
+        .dashboard-actions { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; flex-shrink: 0;}
+        .total-time-text { font-size: 18px; color: #fff; margin-bottom: 10px; }
+        .total-time-text span { font-weight: bold; color: #ffb700; font-size: 22px; text-shadow: 0 0 10px rgba(255, 183, 0, 0.5);}
+        
+        .btn-unlock { background: linear-gradient(135deg, #32CD32, #228B22); border: 2px solid #7CFC00; color: white; padding: 15px 40px; font-size: 20px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 20px rgba(50, 205, 50, 0.5); font-family: 'Anuphan', sans-serif; transition: all 0.3s; }
+        .btn-unlock:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(50, 205, 50, 0.8); }
+
+        /* ==========================================
+           Animations & Modals
+        ========================================== */
+        @keyframes scanLight { 0% { left: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: 110%; opacity: 0; } }
+        @keyframes scanLightReverse { 0% { right: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { right: 110%; opacity: 0; } }
+        @keyframes pulseSlot { 0% { border-color: rgba(0, 255, 255, 0.1); box-shadow: none; } 100% { border-color: rgba(0, 255, 255, 0.4); box-shadow: 0 0 15px rgba(0, 255, 255, 0.2) inset; } }
+        @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes cardShine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes pulseText { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; text-shadow: 0 0 15px rgba(0,255,255,0.9); } }
+        @keyframes spinGlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .shake-anim { animation: shake 0.4s; border-color: #ff4500 !important; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background: linear-gradient(145deg, #0a1930, #000); padding: 40px; border-radius: 15px; border: 2px solid #00ffff; box-shadow: 0 0 40px rgba(0, 255, 255, 0.4); text-align: center; max-width: 500px; color: white; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .btn-modal { background-color: #31a8ff; color: white; border: none; padding: 12px 35px; font-size: 18px; font-weight: bold; border-radius: 30px; cursor: pointer; font-family: 'Anuphan', sans-serif; transition: all 0.3s; box-shadow: 0 4px 15px rgba(49, 168, 255, 0.4); margin-top: 15px;}
+        .btn-modal:hover { background-color: #0078d7; transform: scale(1.05); }
+        .error-modal { border-color: #ff4500; box-shadow: 0 0 40px rgba(255, 69, 0, 0.4); }
+        .error-modal h1 { color: #ff4500 !important; }
+        .btn-error { background-color: #ff4500; box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4); }
+        .btn-error:hover { background-color: #cc3700; }
+
+        /* กติกา Modal Styles */
+        .rules-box { position: relative; display: flex; flex-direction: column; align-items: center; animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .blink-alert-text { color: #ffea00; font-size: 24px; font-weight: bold; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 234, 0, 0.8); animation: textBlink 1s infinite; }
+        .rules-img-wrapper { position: relative; padding: 5px; border-radius: 24px; overflow: hidden; display: flex; box-shadow: 0 0 35px rgba(255, 80, 0, 0.6); animation: pulseFireBox 2s infinite; }
+        .rules-img-wrapper::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, #ff3300, #ffcc00, transparent); animation: spinGlow 2.5s linear infinite; }
+        .rules-img { position: relative; z-index: 1; max-width: 90vw; max-height: 70vh; width: auto; border-radius: 20px; background: rgba(20, 20, 20, 0.9); }
+        .btn-start-game { margin-top: -25px; z-index: 10; font-family: 'Anuphan', sans-serif; font-size: 24px; font-weight: bold; padding: 15px 70px; background: linear-gradient(90deg, #00ff73, #00b33c); color: #fff; border: 2px solid #00ff73; border-radius: 50px; cursor: pointer; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); box-shadow: 0 0 25px rgba(0, 255, 115, 0.7); animation: pulseGreen 1.2s infinite; transition: transform 0.2s, background 0.3s; }
+        .btn-start-game:active { transform: scale(0.95); }
+        .btn-start-game:hover { background: linear-gradient(90deg, #33ff99, #00cc44); }
+    </style>
+</head>
+<body>
+
+    <!-- Modal กติกาเด้งก่อนเริ่มเกม -->
+    <div id="rules-modal-overlay" class="modal-overlay">
+        <div class="rules-box">
+            <div class="blink-alert-text">⚠️ โปรดอ่านกติกาก่อนเริ่มเกม ⚠️</div>
+            <div class="rules-img-wrapper">
+                <img src="image/Rules/rules-st2.svg" alt="Rules Stage 2" class="rules-img" onerror="this.src='image/rules-st2.svg'; this.onerror=null;">
+            </div>
+            <button class="btn-start-game" onclick="startFromRules()">เริ่มลุยเลย!</button>
+        </div>
+    </div>
+
+    <div id="alert-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-box" id="alert-box">
+            <h1 id="alert-title" style="margin: 0 0 15px 0; font-size: 32px;">...</h1>
+            <p id="alert-desc" style="font-size: 18px; color: #ccc; margin-bottom: 20px; line-height: 1.5;">...</p>
+            <button id="alert-btn" class="btn-modal"></button>
+        </div>
+    </div>
+
+    <!-- UI ด้านบน -->
+    <div class="top-bar-container" id="top-bar-section">
+        <div class="left-badges-group">
+            <div class="level-badge-wrapper">
+                <div class="level-badge">
+                    <div class="number">2</div>
+                    <div class="info">
+                        <span class="name">Workflow Challenge</span>
+                        <span class="sub">Level 2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="center-group">
+            <div class="instruction-box">ลากและวางขั้นตอนเพื่อเรียงลำดับการบันทึกงานใน Photoshop</div>
+            <div class="timer-container">
+                <span class="timer-icon">⏱️</span> <div class="timer-val" id="timer-val">00:00</div>
+            </div>
+        </div>
+
+        <div class="right-profile-group">
+            <div class="player-profile">
+                <div class="avatar">🎮</div>
+                <div class="info">
+                    <span class="name" id="display_player_name">ผู้เล่น</span>
+                    <span class="room" id="display_room_text"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- บอร์ดเกม Sci-Fi -->
+    <div class="game-board-wrapper" id="game-board-wrapper">
+        
+        <!-- โซนที่ 1: แผงเรียงลำดับ -->
+        <div class="pipeline-zone">
+            <div class="cyber-line-top"></div>
+            <div class="cyber-line-bottom"></div>
+
+            <div class="mission-header">
+                <img id="mission-image" class="mission-image" src="" alt="Mission Image" onerror="this.style.display='none'">
+                <div class="mission-title" id="mission-title">
+                    <span>Mission 1/2</span> กำลังโหลด...
+                </div>
+            </div>
+            
+            <div class="pipeline-track" id="pipeline-track">
+                <!-- Drop slots จะสร้างผ่าน JS -->
+            </div>
+        </div>
+
+        <!-- ข้อความคั่นกลาง -->
+        <div class="separator-text">
+            <span>&raquo;&raquo;&raquo;</span> ลากขั้นตอนจากด้านล่าง มาวางให้ถูกลำดับ <span>&laquo;&laquo;&laquo;</span>
+        </div>
+
+        <!-- โซนที่ 2: คลังการ์ดขั้นตอน -->
+        <div class="pool-zone" id="pool-zone">
+            <!-- Cards จะถูกสร้างผ่าน JS -->
+        </div>
+
+        <!-- ปุ่มตรวจคำตอบ -->
+        <button id="btn-check" class="btn-check-answer" onclick="checkCompletion()">🔍 ตรวจคำตอบ</button>
+    </div>
+
+    <!-- แดชบอร์ดสรุปผลว้าวๆ -->
+    <div class="game-board-wrapper" id="dashboard-wrapper" style="display:none;">
+        <div class="summary-dashboard" id="summary-dashboard">
+            <div class="cyber-line-top"></div>
+            <div class="cyber-line-bottom"></div>
+
+            <div class="dashboard-header">
+                <div class="dashboard-title">
+                    <h1>✨ ภารกิจสำเร็จ ✨</h1>
+                    <p>เคลียร์ด่าน Workflow สมบูรณ์แบบ!</p>
+                </div>
+                <div class="score-display">
+                    <div style="text-align:right;">
+                        <div style="font-size:18px; color:#ccc;">สถานะ</div>
+                        <div style="font-size:14px; color:#32CD32;">Level 2 Completed</div>
+                    </div>
+                    <div class="wow-score-wrapper">
+                        <div class="wow-score-inner">
+                            <span class="score-text">PASS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- การ์ดโชว์เวลา 2 ภารกิจ -->
+            <div class="stats-grid-wow">
+                <div class="stat-card-wow">
+                    <img src="image/psd.svg" alt="PSD" class="wow-icon" onerror="this.style.display='none'">
+                    <div class="wow-info">
+                        <h4>ภารกิจ 1 (PSD)</h4>
+                        <div class="val" id="stat-m1-time">0 วิ</div>
+                    </div>
+                </div>
+                <div class="stat-card-wow">
+                    <img src="image/jpg.svg" alt="JPG" class="wow-icon" onerror="this.style.display='none'">
+                    <div class="wow-info">
+                        <h4>ภารกิจ 2 (JPG)</h4>
+                        <div class="val" id="stat-m2-time">0 วิ</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-actions">
+                <div class="total-time-text">⏱️ เวลาที่ใช้รวมทั้งหมด: <span id="stat-total-time">00:00</span> นาที</div>
+                <button class="btn-unlock" onclick="unlockNextStage()">ปลดล็อคด่านที่ 3 ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ตรวจสอบข้อมูลผู้เล่นจาก localStorage
+        // ==========================================
+        document.addEventListener("DOMContentLoaded", function() {
+            const playerName = localStorage.getItem("player_name");
+            if (!playerName) {
+                window.location.href = "login.html";
+                return;
+            }
+            
+            document.getElementById("display_player_name").textContent = playerName;
+            
+            const roomText = localStorage.getItem("room_text");
+            if (roomText) {
+                document.getElementById("display_room_text").textContent = roomText;
+            }
+        });
+
+        // ==========================================
+        // Audio System (ไซไฟแฮกเกอร์ BGM + เสียงวางบ็อกซ์)
+        // ==========================================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let bgmInterval = null;
+        const workflowNotes = [220.00, 261.63, 329.63, 261.63]; // A3, C4, E4, C4 (แนวดิจิทัลไซไฟ)
+        let noteIdx = 0;
+
+        function startBGM() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            stopBGM(); 
+            bgmInterval = setInterval(() => {
+                if (audioCtx.state === 'suspended') return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square'; // เสียง Square แบบเทคโนโลยี
+                osc.frequency.setValueAtTime(workflowNotes[noteIdx % workflowNotes.length], audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+                noteIdx++;
+            }, 200); // จังหวะเร็วปานกลางให้ดูลึกลับตื่นเต้น
+        }
+
+        function stopBGM() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        function playDropSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine'; // เสียงนุ่มๆ แบบ Pop
+            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        const missions = [
+            {
+                title: "บันทึกไฟล์ต้นฉบับ (.PSD)",
+                image: "image/psd.svg", 
+                steps: [
+                    { id: "m1_1", text: "File", icon: "📁" },
+                    { id: "m1_2", text: "Save As", icon: "💾" },
+                    { id: "m1_3", text: "เลือกโฟลเดอร์\nของตนเอง", icon: "🗂️" },
+                    { id: "m1_4", text: "ตั้งชื่อไฟล์", icon: "✏️" },
+                    { id: "m1_5", text: "เลือกชนิดไฟล์\n(*.PSD)", icon: "🎨" },
+                    { id: "m1_6", text: "Save", icon: "✅" }
+                ]
+            },
+            {
+                title: "ส่งออกไฟล์ภาพ (.JPG)",
+                image: "image/jpg.svg", 
+                steps: [
+                    { id: "m2_1", text: "File", icon: "📁" },
+                    { id: "m2_2", text: "Export", icon: "📤" }, 
+                    { id: "m2_3", text: "Export As", icon: "⚙️" },
+                    { id: "m2_4", text: "เลือก JPG", icon: "🖼️" },
+                    { id: "m2_5", text: "Export", icon: "📤" }, 
+                    { id: "m2_6", text: "เลือกโฟลเดอร์", icon: "🗂️" },
+                    { id: "m2_7", text: "ตั้งชื่อไฟล์", icon: "✏️" },
+                    { id: "m2_8", text: "Save", icon: "✅" }
+                ]
+            }
+        ];
+
+        let currentMission = 0;
+        let draggedCard = null;
+        
+        let timeElapsed = 0; 
+        let timerInterval = null;
+        let missionStartTimes = [0, 0];
+        let missionDurations = [0, 0];
+
+        const pipelineTrack = document.getElementById('pipeline-track');
+        const poolZone = document.getElementById('pool-zone');
+        const alertOverlay = document.getElementById('alert-overlay');
+        const alertBox = document.getElementById('alert-box');
+        const timerVal = document.getElementById('timer-val');
+
+        function formatTime(seconds) {
+            let m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            let s = (seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function startGlobalTimer() {
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                timerVal.innerText = formatTime(timeElapsed);
+            }, 1000);
+        }
+
+        function stopGlobalTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function startFromRules() {
+            document.getElementById('rules-modal-overlay').style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            startGame();
+        }
+
+        function startGame() {
+            startGlobalTimer();
+            startBGM(); // เปิดเพลงลุ้นระทึก
+            loadMission(currentMission);
+        }
+
+        function loadMission(index) {
+            const mission = missions[index];
+            missionStartTimes[index] = timeElapsed;
+
+            document.getElementById('mission-title').innerHTML = `<span>Mission ${index + 1}/2</span> ${mission.title}`;
+            
+            const mImage = document.getElementById('mission-image');
+            mImage.src = mission.image;
+            mImage.style.display = 'block';
+            
+            pipelineTrack.innerHTML = '';
+            poolZone.innerHTML = '';
+
+            let shuffledSteps = [...mission.steps].sort(() => Math.random() - 0.5);
+
+            mission.steps.forEach((step, i) => {
+                const slot = document.createElement('div');
+                slot.className = 'drop-slot';
+                slot.setAttribute('data-index', i + 1);
+                slot.setAttribute('data-expected', step.id);
+                
+                slot.addEventListener('dragover', e => e.preventDefault());
+                slot.addEventListener('dragenter', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+                slot.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+                slot.addEventListener('drop', handleDropOnSlot);
+
+                pipelineTrack.appendChild(slot);
+            });
+
+            shuffledSteps.forEach(step => {
+                const card = document.createElement('div');
+                card.className = 'step-card';
+                card.setAttribute('draggable', 'true');
+                card.setAttribute('data-id', step.id);
+
+                card.innerHTML = `
+                    <div class="step-icon">${step.icon}</div>
+                    <div class="step-text">${step.text.replace(/\n/g, '<br>')}</div>
+                `;
+
+                card.addEventListener('dragstart', function(e) {
+                    draggedCard = this;
+                    setTimeout(() => this.style.opacity = '0.5', 0);
+                });
+                card.addEventListener('dragend', function() {
+                    this.style.opacity = '1';
+                    draggedCard = null;
+                });
+
+                poolZone.appendChild(card);
+            });
+
+            poolZone.addEventListener('dragover', e => e.preventDefault());
+            poolZone.addEventListener('drop', function(e) {
+                if (!draggedCard) return;
+                this.appendChild(draggedCard);
+            });
+        }
+
+        function handleDropOnSlot(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            if (!draggedCard) return;
+
+            if (this.children.length > 0) {
+                const existingCard = this.children[0];
+                poolZone.appendChild(existingCard);
+            }
+            
+            this.appendChild(draggedCard);
+            this.classList.add('filled');
+            playDropSound(); // เล่นเสียงตอนวางการ์ดลงช่อง
+        }
+
+        function checkCompletion() {
+            const slots = document.querySelectorAll('.drop-slot');
+            let isFull = true;
+            let isAllCorrect = true;
+            let wrongCards = [];
+
+            slots.forEach(slot => {
+                if (slot.children.length === 0) {
+                    isFull = false;
+                } else {
+                    const card = slot.children[0];
+                    let expectedId = slot.getAttribute('data-expected');
+                    let cardId = card.getAttribute('data-id');
+                    
+                    let isCorrect = (expectedId === cardId);
+                    if ((expectedId === 'm2_2' || expectedId === 'm2_5') && (cardId === 'm2_2' || cardId === 'm2_5')) {
+                        isCorrect = true;
+                    }
+
+                    if (!isCorrect) {
+                        isAllCorrect = false;
+                        wrongCards.push({ slot: slot, card: card });
+                    }
+                }
+            });
+
+            if (!isFull) {
+                stopBGM(); // หยุดเพลงเพื่อเน้นแจ้งเตือน
+                showAlert('⚠️ ข้อมูลไม่ครบ', 'กรุณาวางขั้นตอนให้ครบทุกช่องครับ', 'ตกลง', 'error', () => {
+                    closeAlert();
+                    startBGM(); // เล่นเพลงต่อ
+                });
+                return;
+            }
+
+            if (isAllCorrect) {
+                missionDurations[currentMission] = timeElapsed - missionStartTimes[currentMission];
+
+                if (currentMission === 0) {
+                    stopBGM(); // หยุดเพลงชั่วคราว
+                    showAlert('✨ ผ่านภารกิจที่ 1!', 'เรียงลำดับถูกต้อง! ไปลุยภารกิจต่อไปกันเลย', 'ลุยต่อ', 'success', () => {
+                        currentMission++;
+                        loadMission(currentMission);
+                        closeAlert();
+                        startBGM(); // เล่นเพลงต่อสำหรับภารกิจที่ 2
+                    });
+                } else {
+                    stopGlobalTimer();
+                    stopBGM(); // จบเกม ปิดเพลง
+                    showAlert('🏆 ยินดีด้วย!', 'คุณเคลียร์ด่าน Workflow สำเร็จแล้ว!', 'ดูสรุปผล', 'success', () => {
+                        closeAlert();
+                        showDashboard();
+                    });
+                }
+            } else {
+                wrongCards.forEach(item => {
+                    item.card.classList.add('shake-anim');
+                    setTimeout(() => item.card.classList.remove('shake-anim'), 400);
+                });
+
+                stopBGM(); // หยุดเพลงให้รู้ว่าทำพลาด
+                showAlert('⚠️ ยังไม่ถูกต้อง', 'มีขั้นตอนผิด ระบบดึงการ์ดกลับแล้ว ลองเรียงใหม่ดูนะ!', 'ลองใหม่', 'error', () => {
+                    setTimeout(() => {
+                        wrongCards.forEach(item => {
+                            poolZone.appendChild(item.card);
+                            item.slot.classList.remove('filled');
+                        });
+                    }, 300);
+                    closeAlert();
+                    startBGM(); // ลุยและเล่นเพลงต่อ
+                });
+            }
+        }
+
+        function showAlert(title, desc, btnText, type, action) {
+            document.getElementById('alert-title').innerText = title;
+            document.getElementById('alert-title').style.color = type === 'error' ? '#ff4500' : '#00ffff';
+            document.getElementById('alert-desc').innerText = desc;
+            
+            const btn = document.getElementById('alert-btn');
+            btn.innerText = btnText;
+            btn.className = type === 'error' ? 'btn-modal btn-error' : 'btn-modal';
+            btn.onclick = action;
+
+            alertBox.className = type === 'error' ? 'modal-box error-modal' : 'modal-box';
+            alertOverlay.style.display = 'flex';
+        }
+
+        function closeAlert() {
+            alertOverlay.style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('game-board-wrapper').style.display = 'none';
+            document.getElementById('top-bar-section').style.display = 'none'; 
+
+            document.getElementById('dashboard-wrapper').style.display = 'flex';
+            document.getElementById('summary-dashboard').style.display = 'flex';
+
+            document.getElementById('stat-total-time').innerText = formatTime(timeElapsed);
+            document.getElementById('stat-m1-time').innerText = `${missionDurations[0]} วินาที`;
+            document.getElementById('stat-m2-time').innerText = `${missionDurations[1]} วินาที`;
+        }
+
+        function unlockNextStage() {
+            // บันทึกสถานะการผ่านด่านที่ 2
+            localStorage.setItem("stage2_passed", "true");
+            
+            // ให้คะแนนสำหรับการผ่านด่าน (100 คะแนน)
+            const score = 100;
+            localStorage.setItem("stage2_score", score);
+            
+            // บันทึกเวลาที่ใช้
+            localStorage.setItem("mission1_time", missionDurations[0]);
+            localStorage.setItem("mission2_time", missionDurations[1]);
+            
+            // สะสมเวลาทั้งหมด
+            let currentTotalTime = parseInt(localStorage.getItem("elapsed_time") || "0");
+            localStorage.setItem("elapsed_time", currentTotalTime + timeElapsed);
+            
+            // คำนวณคะแนนรวม
+            let currentTotalScore = parseInt(localStorage.getItem("total_score") || "0");
+            localStorage.setItem("total_score", currentTotalScore + score);
+            
+            // เปลี่ยนหน้าไปยัง levels.html
+            window.location.href = "levels.html";
+        }
+    </script>
+</body>
+</html>
