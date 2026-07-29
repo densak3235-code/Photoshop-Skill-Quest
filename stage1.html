@@ -852,6 +852,8 @@
                             localStorage.setItem("stage1_score", maxScore);
                             
                             let timeUsed = maxTime - timeLeft;
+                            localStorage.setItem("stage1_time", timeUsed); 
+                            
                             let currentElapsedTime = parseInt(localStorage.getItem("elapsed_time") || "0");
                             localStorage.setItem("elapsed_time", currentElapsedTime + timeUsed);
                             

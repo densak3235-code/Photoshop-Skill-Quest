@@ -80,20 +80,6 @@
     <script src="students.js"></script>
 
     <script>
-        // รีเซ็ต (ล้างค่า) การผ่านด่านทั้งหมดทุกครั้งที่โหลดหน้า Login
-        localStorage.removeItem("stage1_passed");
-        localStorage.removeItem("stage2_passed");
-        localStorage.removeItem("stage3_passed");
-        localStorage.removeItem("stage4_passed");
-        
-        // เคลียร์คะแนนและเวลาของรอบก่อนหน้า
-        localStorage.removeItem("stage1_score");
-        localStorage.removeItem("stage2_score");
-        localStorage.removeItem("stage3_score");
-        localStorage.removeItem("stage4_score");
-        localStorage.removeItem("total_score");
-        localStorage.removeItem("elapsed_time");
-
         function selectRoom(roomValue, roomText) {
             document.getElementById('selected-room-text').innerText = roomText;
             document.getElementById('dropdown-toggle').checked = false;
@@ -147,8 +133,38 @@
             }
 
             if (playerName !== '' && roomValue !== '') {
+                
+                // ✨ ย้ายการเคลียร์ข้อมูลทั้งหมดมาทำ "ตอนกดยืนยัน" ✨
+                // 1. เคลียร์สถานะการผ่านด่าน
+                localStorage.removeItem("stage1_passed");
+                localStorage.removeItem("stage2_passed");
+                localStorage.removeItem("stage3_passed");
+                localStorage.removeItem("stage4_passed");
+                
+                // 2. เคลียร์คะแนน
+                localStorage.removeItem("stage1_score");
+                localStorage.removeItem("stage2_score");
+                localStorage.removeItem("stage3_score");
+                localStorage.removeItem("stage4_score");
+                localStorage.removeItem("total_score");
+                
+                // 3. เคลียร์เวลา
+                localStorage.removeItem("elapsed_time");
+                localStorage.removeItem("stage1_time");
+                localStorage.removeItem("stage2_time");
+                localStorage.removeItem("stage3_time");
+                localStorage.removeItem("stage4_time");
+                localStorage.removeItem("mission1_time");
+                localStorage.removeItem("mission2_time");
+                
+                // 4. เคลียร์ประวัติความพยายามด่าน 3 ทิ้ง 100%
+                localStorage.removeItem("stage3_attempts");
+
+                // บันทึกข้อมูลผู้เล่นคนใหม่
                 localStorage.setItem("player_name", playerName);
                 localStorage.setItem("room", roomValue);
+                
+                // ไปหน้ากติกา
                 window.location.href = "rules.html";
             }
         });

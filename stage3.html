@@ -754,7 +754,10 @@
 
             // บันทึกคะแนนและเวลาลง localStorage เมื่อจบเกม
             localStorage.setItem("stage3_score", score.toString());
-            localStorage.setItem("elapsed_time", totalTime.toString());
+            localStorage.setItem("stage3_time", totalTime.toString()); 
+            
+            let currentElapsedTime = parseInt(localStorage.getItem("elapsed_time") || "0");
+            localStorage.setItem("elapsed_time", (currentElapsedTime + totalTime).toString());
             
             let stage1Score = parseInt(localStorage.getItem("stage1_score")) || 0;
             let stage2Score = parseInt(localStorage.getItem("stage2_score")) || 0;
@@ -795,9 +798,6 @@
                 } else {
                     historyBox.style.display = 'none'; 
                 }
-                
-                // นำคำสั่งลบประวัติออก เพื่อให้หน้า Summary นำไปแสดงผลได้
-                // localStorage.removeItem('stage3_attempts'); 
 
             } else {
                 headerStatus.innerText = "💥 ยังไม่ผ่านเกณฑ์ 💥";

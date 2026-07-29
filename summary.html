@@ -190,12 +190,13 @@
         <button id="pdfBtn" onclick="generatePDFReport()" class="px-8 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(0,255,255,0.3)] flex items-center gap-3">
             <i class="fa-solid fa-file-pdf"></i> บันทึกผลเป็น PDF
         </button>
+        <!-- ✨ แก้ไข: เพิ่มคำสั่ง localStorage.clear() ที่ปุ่มเปลี่ยนผู้เล่นและออกสู่หน้าแรก -->
         <!-- ปุ่มเปลี่ยนผู้เล่น (กลับไปหน้า Login) -->
-        <a href="login.html" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(168,85,247,0.3)] flex items-center gap-3">
+        <a href="login.html" onclick="localStorage.clear();" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-500 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(168,85,247,0.3)] flex items-center gap-3">
             <i class="fa-solid fa-user-switch"></i> เปลี่ยนผู้เล่น
         </a>
         <!-- ปุ่มกลับหน้าแรก -->
-        <a href="index.html" class="px-8 py-3.5 bg-gray-700 hover:bg-gray-600 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center gap-3">
+        <a href="index.html" onclick="localStorage.clear();" class="px-8 py-3.5 bg-gray-700 hover:bg-gray-600 text-white text-lg font-bold rounded-full transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center gap-3">
             <i class="fa-solid fa-power-off"></i> ออกสู่เมนูหลัก
         </a>
     </div>
@@ -220,7 +221,6 @@
             const s3Passed = localStorage.getItem("stage3_passed") === "true";
             const s4Passed = localStorage.getItem("stage4_passed") === "true";
 
-            // --- แก้ไขการดึงเวลาของ Stage 1 และ 2 ---
             // หาเวลาของ Stage 2 จาก mission1 และ mission2 มารวมกัน
             const m1Time = parseInt(localStorage.getItem("mission1_time") || "0");
             const m2Time = parseInt(localStorage.getItem("mission2_time") || "0");
@@ -233,7 +233,6 @@
             // กรณีที่มีการแก้โค้ดบันทึก stage1_time หรือ stage2_time ไว้แล้วในอนาคต ให้ใช้ค่านั้นเป็นหลัก 
             if (localStorage.getItem("stage1_time")) s1Time = parseInt(localStorage.getItem("stage1_time"));
             if (localStorage.getItem("stage2_time")) s2Time = parseInt(localStorage.getItem("stage2_time"));
-            // ----------------------------------------
 
             const s3Time = parseInt(localStorage.getItem("stage3_time") || "0");
             const s4Time = parseInt(localStorage.getItem("stage4_time") || "0");
